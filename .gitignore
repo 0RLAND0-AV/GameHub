@@ -1,0 +1,9 @@
+node_modules/
+database/
+src/script1.ps1
+src/script2.ps1
+src/script3.ps1
+src/script4.ps1
+.env
+.vscode/
+dist/

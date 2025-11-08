@@ -1,0 +1,27 @@
+{
+  "name": "gamehub",
+  "version": "1.0.0",
+  "description": "Proyecto Final del curso de desarrollo Backend de la SCESI.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node dist/main.js",
+    "dev": "nodemon --watch src/**/*.ts --exec ts-node src/main.ts",
+    "dev1": "nodemon --exec ts-node src/main.ts",
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  
+  "keywords": [],
+  "author": "Orlando AV",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.5",
+    "@types/node": "^24.10.0",
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}
