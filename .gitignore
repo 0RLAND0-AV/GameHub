@@ -1,5 +1,5 @@
 node_modules/
-database/
+databasePG/
 src/script1.ps1
 src/script2.ps1
 src/script3.ps1
