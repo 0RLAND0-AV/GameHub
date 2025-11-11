@@ -1,11 +1,11 @@
 import {Request, Response, Router} from 'express'
 
 import helthRoter from '../modules/helthCheck/helthCheck.route'
-import UserRouter from '../modules/users/users.routes'
-import AuthRouter from '../modules/auth/auth.routes'
-import { validateSesionUser } from '../middleware/userSesion.middleware'
-import { userRoleValidation } from '../middleware/userRole.middleware'
-import { UserRole } from '../modules/users/interfaces/users.interface'
+// import UserRouter from '../modules/users/users.routes'
+// import AuthRouter from '../modules/auth/auth.routes'
+// import { validateSesionUser } from '../middleware/userSesion.middleware'
+// import { userRoleValidation } from '../middleware/userRole.middleware'
+// import { UserRole } from '../modules/users/interfaces/users.interface'
 
 const router = Router()
 
@@ -18,8 +18,8 @@ router.get('/', (req, res) => {
 
 router.use('/', helthRoter)
 // router.use('/voto', validateSesionUser, userRoleValidation(UserRole.SUPER_ADMIN), VoteRouter)
-router.use('/users', UserRouter)
-router.use('/auth', AuthRouter)
+// router.use('/users', UserRouter)
+// router.use('/auth', AuthRouter)
 
 
 router.use((req, res) => {
