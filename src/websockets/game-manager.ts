@@ -11,12 +11,14 @@ import {
 } from '../shared/types/socket-events.type';
 import { PlayerTransactionsService } from '../modules/player-transactions/player-transactions.service';
 import { GameHistoryService } from '../modules/game-history/game-history.service';
+import { GameSessionsService } from '../modules/game-sessions/game-sessions.service';
 import { UsersService } from '../modules/users/users.service';
 import socketIOManager from './socketio-manager';
 import { GameRoomsService } from '../modules/game-rooms/game-rooms.service'; // ⭐ AGREGAR
 
 interface GameState {
   roomId: string;
+  gameSessionId?: string; // ⭐ NUEVO: Almacenar ID de sesión real
   currentQuestionIndex: number;
   questions: QuestionData[];
   playerScores: Map<string, PlayerScore>;
@@ -45,12 +47,14 @@ class GameManager {
   private games: Map<string, GameState> = new Map();
   private transactionsService: PlayerTransactionsService;
   private gameHistoryService: GameHistoryService;
+  private gameSessionsService: GameSessionsService; // ⭐ NUEVO
   private usersService: UsersService;
   private gameRoomsService: GameRoomsService; // ⭐ AGREGAR
 
   constructor() {
     this.transactionsService = new PlayerTransactionsService();
     this.gameHistoryService = new GameHistoryService();
+    this.gameSessionsService = new GameSessionsService(); // ⭐ NUEVO
     this.usersService = new UsersService();
     this.gameRoomsService = new GameRoomsService(); // ⭐ AGREGAR
   }
@@ -58,7 +62,7 @@ class GameManager {
   // ============================================
   // INICIAR JUEGO (ACTUALIZADO)
   // ============================================
-  startGame(roomId: string, players: { userId: string; username: string }[], betAmount: number, totalPot: number): void {
+  async startGame(roomId: string, players: { userId: string; username: string }[], betAmount: number, totalPot: number): Promise<void> {
     console.log(`🎮 Initializing game for room ${roomId}`);
 
     const questions = this.generateRandomQuestions(ENV.QUESTIONS_PER_GAME);
@@ -73,8 +77,19 @@ class GameManager {
       });
     });
 
+    // ⭐ CREAR SESIÓN DE JUEGO EN BD
+    let gameSessionId: string | undefined;
+    try {
+      const gameSession = await this.gameSessionsService.createGameSession(roomId);
+      gameSessionId = gameSession.id;
+    } catch (error) {
+      console.error(`❌ Failed to create game session for room ${roomId}:`, error);
+      throw error;
+    }
+
     const gameState: GameState = {
       roomId,
+      gameSessionId,        // ⭐ GUARDAR ID DE SESIÓN
       currentQuestionIndex: 0,
       questions,
       playerScores,
@@ -280,7 +295,7 @@ class GameManager {
       // Preparar datos para historial
       gameHistoryData.push({
         roomId,
-        gameSessionId: `session_${roomId}_${Date.now()}`,
+        gameSessionId: game.gameSessionId, // ⭐ USAR ID DE SESIÓN REAL
         userId: player.userId,
         finalPosition: currentPosition,
         finalScore: player.totalScore,
@@ -589,3 +604,4 @@ class GameManager {
 }
 
 export default new GameManager();
+

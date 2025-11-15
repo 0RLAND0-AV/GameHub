@@ -217,7 +217,7 @@ class SocketIOManager {
 
       console.log(`🎯 Game started in room ${roomId} - Bets processed`);
       
-      gameManager.startGame(
+      await gameManager.startGame(
         roomId, 
         room.players.map(p => ({
           userId: p.userId,
@@ -368,3 +368,4 @@ class SocketIOManager {
 }
 
 export default new SocketIOManager();
+
