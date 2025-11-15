@@ -1,1 +1,1 @@
-export * from './response.interface'
+export * from './api-response.type'
