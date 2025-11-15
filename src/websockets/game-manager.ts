@@ -1,4 +1,4 @@
-import { getSocketIOInstance } from '../config/socketio-server.config';
+﻿import { getSocketIOInstance } from '../config/socketio-server.config';
 import { ENV } from '../config/environment.config';
 import {
   QuestionData,
@@ -14,19 +14,19 @@ import { GameHistoryService } from '../modules/game-history/game-history.service
 import { GameSessionsService } from '../modules/game-sessions/game-sessions.service';
 import { UsersService } from '../modules/users/users.service';
 import socketIOManager from './socketio-manager';
-import { GameRoomsService } from '../modules/game-rooms/game-rooms.service'; // ⭐ AGREGAR
+import { GameRoomsService } from '../modules/game-rooms/game-rooms.service'; //  AGREGAR
 
 interface GameState {
   roomId: string;
-  gameSessionId?: string; // ⭐ NUEVO: Almacenar ID de sesión real
+  gameSessionId?: string; //  NUEVO: Almacenar ID de sesión real
   currentQuestionIndex: number;
   questions: QuestionData[];
   playerScores: Map<string, PlayerScore>;
   questionStartTime?: number;
   questionTimer?: NodeJS.Timeout;
   playerAnswers: Map<string, PlayerAnswerData>;
-  betAmount: number; // ⭐ NUEVO
-  totalPot: number;  // ⭐ NUEVO
+  betAmount: number; //  NUEVO
+  totalPot: number;  //  NUEVO
 }
 
 interface PlayerScore {
@@ -47,23 +47,23 @@ class GameManager {
   private games: Map<string, GameState> = new Map();
   private transactionsService: PlayerTransactionsService;
   private gameHistoryService: GameHistoryService;
-  private gameSessionsService: GameSessionsService; // ⭐ NUEVO
+  private gameSessionsService: GameSessionsService; //  NUEVO
   private usersService: UsersService;
-  private gameRoomsService: GameRoomsService; // ⭐ AGREGAR
+  private gameRoomsService: GameRoomsService; //  AGREGAR
 
   constructor() {
     this.transactionsService = new PlayerTransactionsService();
     this.gameHistoryService = new GameHistoryService();
-    this.gameSessionsService = new GameSessionsService(); // ⭐ NUEVO
+    this.gameSessionsService = new GameSessionsService(); //  NUEVO
     this.usersService = new UsersService();
-    this.gameRoomsService = new GameRoomsService(); // ⭐ AGREGAR
+    this.gameRoomsService = new GameRoomsService(); //  AGREGAR
   }
 
   // ============================================
   // INICIAR JUEGO (ACTUALIZADO)
   // ============================================
   async startGame(roomId: string, players: { userId: string; username: string }[], betAmount: number, totalPot: number): Promise<void> {
-    console.log(`🎮 Initializing game for room ${roomId}`);
+    console.log(` Initializing game for room ${roomId}`);
 
     const questions = this.generateRandomQuestions(ENV.QUESTIONS_PER_GAME);
 
@@ -77,25 +77,25 @@ class GameManager {
       });
     });
 
-    // ⭐ CREAR SESIÓN DE JUEGO EN BD
+    //  CREAR SESIÓN DE JUEGO EN BD
     let gameSessionId: string | undefined;
     try {
       const gameSession = await this.gameSessionsService.createGameSession(roomId);
       gameSessionId = gameSession.id;
     } catch (error) {
-      console.error(`❌ Failed to create game session for room ${roomId}:`, error);
+      console.error(` Failed to create game session for room ${roomId}:`, error);
       throw error;
     }
 
     const gameState: GameState = {
       roomId,
-      gameSessionId,        // ⭐ GUARDAR ID DE SESIÓN
+      gameSessionId,        //  GUARDAR ID DE SESIÓN
       currentQuestionIndex: 0,
       questions,
       playerScores,
       playerAnswers: new Map(),
-      betAmount,      // ⭐ NUEVO
-      totalPot,       // ⭐ NUEVO
+      betAmount,      //  NUEVO
+      totalPot,       //  NUEVO
     };
 
     this.games.set(roomId, gameState);
@@ -126,7 +126,7 @@ class GameManager {
     io.to(roomId).emit('question:displayed', currentQuestion);
 
     console.log(
-      `📋 Question ${game.currentQuestionIndex + 1}/${game.questions.length} displayed in room ${roomId}`
+      ` Question ${game.currentQuestionIndex + 1}/${game.questions.length} displayed in room ${roomId}`
     );
 
     game.questionTimer = setTimeout(() => {
@@ -140,12 +140,12 @@ class GameManager {
   handlePlayerAnswer(payload: PlayerAnswerPayload): void {
     const game = this.games.get(payload.roomId);
     if (!game) {
-      console.log(`⚠️ Game not found for room ${payload.roomId}`);
+      console.log(`️ Game not found for room ${payload.roomId}`);
       return;
     }
 
     if (game.playerAnswers.has(payload.userId)) {
-      console.log(`⚠️ Player ${payload.userId} already answered`);
+      console.log(`️ Player ${payload.userId} already answered`);
       return;
     }
 
@@ -157,7 +157,7 @@ class GameManager {
     });
 
     console.log(
-      `✅ Player ${payload.userId} answered in ${payload.responseTimeSeconds}s`
+      ` Player ${payload.userId} answered in ${payload.responseTimeSeconds}s`
     );
 
     const totalPlayers = game.playerScores.size;
@@ -185,7 +185,7 @@ class GameManager {
     );
 
     if (!correctOption) {
-      console.error(`❌ No correct option found for question ${currentQuestion.questionId}`);
+      console.error(` No correct option found for question ${currentQuestion.questionId}`);
       return;
     }
 
@@ -232,7 +232,7 @@ class GameManager {
     const io = getSocketIOInstance();
     io.to(roomId).emit('question:results', resultsPayload);
 
-    console.log(`📊 Results sent for question ${game.currentQuestionIndex + 1}`);
+    console.log(` Results sent for question ${game.currentQuestionIndex + 1}`);
 
     setTimeout(() => {
       if (game) {
@@ -249,13 +249,13 @@ class GameManager {
     const game = this.games.get(roomId);
     if (!game) return;
 
-    console.log(`🏁 Game finished in room ${roomId}`);
+    console.log(` Game finished in room ${roomId}`);
 
     // Calcular ranking final
     const playersArray = Array.from(game.playerScores.values());
     playersArray.sort((a, b) => b.totalScore - a.totalScore);
 
-    // ⭐ CALCULAR DISTRIBUCIÓN DE PREMIOS
+    //  CALCULAR DISTRIBUCIÓN DE PREMIOS
     const prizeDistribution = this.calculatePrizeDistribution(
       playersArray,
       game.totalPot
@@ -295,7 +295,7 @@ class GameManager {
       // Preparar datos para historial
       gameHistoryData.push({
         roomId,
-        gameSessionId: game.gameSessionId, // ⭐ USAR ID DE SESIÓN REAL
+        gameSessionId: game.gameSessionId, //  USAR ID DE SESIÓN REAL
         userId: player.userId,
         finalPosition: currentPosition,
         finalScore: player.totalScore,
@@ -313,7 +313,7 @@ class GameManager {
     });
 
     try {
-      // ⭐ EJECUTAR TODO EN UNA TRANSACCIÓN
+      //  EJECUTAR TODO EN UNA TRANSACCIÓN
       await this.processGameFinalization(
         roomId,
         rewardsToDistribute,
@@ -330,13 +330,13 @@ class GameManager {
       const io = getSocketIOInstance();
       io.to(roomId).emit('game:finished', resultsPayload);
 
-      console.log(`✅ Game finalized successfully for room ${roomId}`);
+      console.log(` Game finalized successfully for room ${roomId}`);
 
-      // ⭐ NOTIFICAR AL SOCKET MANAGER PARA LIMPIAR LA SALA
+      //  NOTIFICAR AL SOCKET MANAGER PARA LIMPIAR LA SALA
       socketIOManager.cleanupRoom(roomId);
 
     } catch (error) {
-      console.error(`❌ Error finalizing game ${roomId}:`, error);
+      console.error(` Error finalizing game ${roomId}:`, error);
       
       const io = getSocketIOInstance();
       io.to(roomId).emit('error', {
@@ -348,7 +348,7 @@ class GameManager {
     // Limpiar juego después de 30 segundos
     setTimeout(() => {
       this.games.delete(roomId);
-      console.log(`🗑️ Game cleaned up for room ${roomId}`);
+      console.log(`️ Game cleaned up for room ${roomId}`);
     }, 30000);
   }
 
@@ -453,7 +453,7 @@ class GameManager {
       });
     }
 
-    console.log(`✅ Game finalization processed for room ${roomId}`);
+    console.log(` Game finalization processed for room ${roomId}`);
   }
 
   // ============================================
@@ -599,7 +599,7 @@ class GameManager {
       clearTimeout(game.questionTimer);
     }
     this.games.delete(roomId);
-    console.log(`❌ Game cancelled for room ${roomId}`);
+    console.log(` Game cancelled for room ${roomId}`);
   }
 }
 

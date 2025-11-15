@@ -1,4 +1,4 @@
-import { RegisterDTO } from './schemas/register.schema';
+﻿import { RegisterDTO } from './schemas/register.schema';
 import { LoginDTO } from './schemas/login.schema';
 import { AuthResponse } from './interfaces/authentication.interface';
 import { PasswordHashUtility } from '../../shared/utils/password-hash.utils';
@@ -33,7 +33,7 @@ export class AuthenticationService {
       role: newUser.role,
     });
 
-    console.log(`✅ User registered: ${newUser.username} (${newUser.email})`);
+    console.log(` User registered: ${newUser.username} (${newUser.email})`);
 
     return {
       token,
@@ -88,7 +88,7 @@ export class AuthenticationService {
       role: user.role,
     });
 
-    console.log(`✅ User logged in: ${user.username}`);
+    console.log(` User logged in: ${user.username}`);
 
     return {
       token,

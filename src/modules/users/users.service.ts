@@ -1,4 +1,4 @@
-import prisma from '../../config/prisma-client.config';
+﻿import prisma from '../../config/prisma-client.config';
 import { UserRole, AuthProvider, CreateUserData, IUser } from './interfaces/user.interface';
 import { PasswordHashUtility } from '../../shared/utils/password-hash.utils';
 import { ENV } from '../../config/environment.config';
@@ -55,7 +55,7 @@ export class UsersService {
       return newUser;
     });
 
-    console.log(`✅ User created in DB: ${user.username} (${user.email})`);
+    console.log(` User created in DB: ${user.username} (${user.email})`);
 
     return user as IUser;
   }

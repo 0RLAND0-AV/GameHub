@@ -1,4 +1,4 @@
-import prisma from '../../config/prisma-client.config';
+﻿import prisma from '../../config/prisma-client.config';
 import { GameSessionStatus } from '../../shared/types/game-enums.type';
 
 export class GameSessionsService {
@@ -15,10 +15,10 @@ export class GameSessionsService {
         },
       });
 
-      console.log(`✅ Game session created: ${gameSession.id} for room ${roomId}`);
+      console.log(` Game session created: ${gameSession.id} for room ${roomId}`);
       return gameSession;
     } catch (error) {
-      console.error(`❌ Error creating game session for room ${roomId}:`, error);
+      console.error(` Error creating game session for room ${roomId}:`, error);
       throw error;
     }
   }
@@ -36,10 +36,10 @@ export class GameSessionsService {
         },
       });
 
-      console.log(`✅ Game session finished: ${gameSessionId}`);
+      console.log(` Game session finished: ${gameSessionId}`);
       return gameSession;
     } catch (error) {
-      console.error(`❌ Error finishing game session ${gameSessionId}:`, error);
+      console.error(` Error finishing game session ${gameSessionId}:`, error);
       throw error;
     }
   }
@@ -67,7 +67,7 @@ export class GameSessionsService {
 
       return gameSession;
     } catch (error) {
-      console.error(`❌ Error fetching game session ${gameSessionId}:`, error);
+      console.error(` Error fetching game session ${gameSessionId}:`, error);
       throw error;
     }
   }
@@ -85,10 +85,10 @@ export class GameSessionsService {
         },
       });
 
-      console.log(`❌ Game session cancelled: ${gameSessionId}`);
+      console.log(` Game session cancelled: ${gameSessionId}`);
       return gameSession;
     } catch (error) {
-      console.error(`❌ Error cancelling game session ${gameSessionId}:`, error);
+      console.error(` Error cancelling game session ${gameSessionId}:`, error);
       throw error;
     }
   }

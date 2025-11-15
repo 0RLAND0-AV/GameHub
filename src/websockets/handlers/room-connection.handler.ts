@@ -1,4 +1,4 @@
-import { Socket } from 'socket.io';
+﻿import { Socket } from 'socket.io';
 import socketIOManager from '../socketio-manager';
 import { getSocketIOInstance } from '../../config/socketio-server.config';
 import { GameEventType } from '../../shared/types/game-enums.type';
@@ -15,7 +15,7 @@ export function handleRoomConnection(socket: Socket): void {
   // ============================================
   socket.on('room:create', async (payload: CreateRoomPayload) => {
     try {
-      console.log(`📥 room:create received from ${payload.username}`);
+      console.log(` room:create received from ${payload.username}`);
       
       if (!payload.userId || !payload.username || !payload.betAmount) {
         throw new Error('Invalid payload');
@@ -25,7 +25,7 @@ export function handleRoomConnection(socket: Socket): void {
         throw new Error('Bet amount must be between 10 and 1000');
       }
 
-      const room = await socketIOManager.createRoom(payload, socket.id); // ⭐ AWAIT
+      const room = await socketIOManager.createRoom(payload, socket.id); //  AWAIT
       
       socket.join(room.roomId);
       
@@ -50,13 +50,13 @@ export function handleRoomConnection(socket: Socket): void {
   // ============================================
   socket.on('room:join', async (payload: JoinRoomPayload) => {
     try {
-      console.log(`📥 room:join received: ${payload.username} -> ${payload.roomId}`);
+      console.log(` room:join received: ${payload.username} -> ${payload.roomId}`);
       
       if (!payload.roomId || !payload.userId || !payload.username) {
         throw new Error('Invalid payload');
       }
 
-      const room = await socketIOManager.joinRoom(payload, socket.id); // ⭐ AWAIT
+      const room = await socketIOManager.joinRoom(payload, socket.id); //  AWAIT
       
       socket.join(room.roomId);
       
@@ -83,7 +83,7 @@ export function handleRoomConnection(socket: Socket): void {
   // ============================================
   socket.on('room:leave', (payload: { roomId: string; userId: string }) => {
     try {
-      console.log(`📥 room:leave received: ${payload.userId} from ${payload.roomId}`);
+      console.log(` room:leave received: ${payload.userId} from ${payload.roomId}`);
       
       const room = socketIOManager.leaveRoom(payload.roomId, payload.userId);
       
@@ -140,7 +140,7 @@ export function handleRoomConnection(socket: Socket): void {
   // DESCONEXIÓN
   // ============================================
   socket.on('disconnect', () => {
-    console.log(`🔌 Socket disconnected: ${socket.id}`);
+    console.log(` Socket disconnected: ${socket.id}`);
     
     // Buscar en qué sala estaba este socket y manejarlo
     const rooms = socketIOManager.getAvailableRooms();

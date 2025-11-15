@@ -1,4 +1,4 @@
-import { getSocketIOInstance } from '../config/socketio-server.config';
+﻿import { getSocketIOInstance } from '../config/socketio-server.config';
 import { RoomStatus } from '../shared/types/game-enums.type';
 import {
   RoomData,
@@ -8,17 +8,17 @@ import {
 } from '../shared/types/socket-events.type';
 import gameManager from './game-manager';
 import { PlayerTransactionsService } from '../modules/player-transactions/player-transactions.service';
-import { GameRoomsService } from '../modules/game-rooms/game-rooms.service'; // ⭐ NUEVO
+import { GameRoomsService } from '../modules/game-rooms/game-rooms.service'; //  NUEVO
 
 class SocketIOManager {
   private rooms: Map<string, RoomData> = new Map();
   private countdownTimers: Map<string, NodeJS.Timeout> = new Map();
   private transactionsService: PlayerTransactionsService;
-  private gameRoomsService: GameRoomsService; // ⭐ NUEVO
+  private gameRoomsService: GameRoomsService; //  NUEVO
 
   constructor() {
     this.transactionsService = new PlayerTransactionsService();
-    this.gameRoomsService = new GameRoomsService(); // ⭐ NUEVO
+    this.gameRoomsService = new GameRoomsService(); //  NUEVO
   }
 
   // ============================================
@@ -52,7 +52,7 @@ class SocketIOManager {
 
     this.rooms.set(roomId, newRoom);
 
-    // ⭐ CREAR SALA EN LA BASE DE DATOS
+    //  CREAR SALA EN LA BASE DE DATOS
     try {
       const gameType = await this.gameRoomsService.ensureGameTypeExists();
       
@@ -69,13 +69,13 @@ class SocketIOManager {
       await this.gameRoomsService.updatePlayerSocketId(roomId, payload.userId, socketId);
 
     } catch (error) {
-      console.error(`❌ Error creating room in DB:`, error);
+      console.error(` Error creating room in DB:`, error);
       // Limpiar sala en memoria si falla
       this.rooms.delete(roomId);
       throw error;
     }
 
-    console.log(`🎮 Room created: ${roomId} by ${payload.username}`);
+    console.log(` Room created: ${roomId} by ${payload.username}`);
     
     return newRoom;
   }
@@ -117,12 +117,12 @@ class SocketIOManager {
     room.currentPlayers++;
     room.totalPot += room.betAmount;
 
-    // ⭐ AGREGAR JUGADOR A LA SALA EN BD
+    //  AGREGAR JUGADOR A LA SALA EN BD
     try {
       await this.gameRoomsService.addPlayerToRoom(payload.roomId, payload.userId);
       await this.gameRoomsService.updatePlayerSocketId(payload.roomId, payload.userId, socketId);
     } catch (error) {
-      console.error(`❌ Error adding player to room in DB:`, error);
+      console.error(` Error adding player to room in DB:`, error);
       // Revertir cambios en memoria
       room.players = room.players.filter(p => p.userId !== payload.userId);
       room.currentPlayers--;
@@ -134,7 +134,7 @@ class SocketIOManager {
       await this.startCountdown(room.roomId);
     }
 
-    console.log(`👤 Player ${payload.username} joined room ${payload.roomId}`);
+    console.log(` Player ${payload.username} joined room ${payload.roomId}`);
     
     return room;
   }
@@ -152,7 +152,7 @@ class SocketIOManager {
     room.status = RoomStatus.COUNTDOWN;
     room.countdownSeconds = 30;
 
-    // ⭐ ACTUALIZAR ESTADO EN BD
+    //  ACTUALIZAR ESTADO EN BD
     await this.gameRoomsService.updateRoomStatus(roomId, RoomStatus.COUNTDOWN);
 
     const io = getSocketIOInstance();
@@ -184,7 +184,7 @@ class SocketIOManager {
     }, 1000);
 
     this.countdownTimers.set(roomId, timer);
-    console.log(`⏱️ Countdown started for room ${roomId}`);
+    console.log(`️ Countdown started for room ${roomId}`);
   }
 
   // ============================================
@@ -203,7 +203,7 @@ class SocketIOManager {
 
       room.status = RoomStatus.IN_PROGRESS;
       
-      // ⭐ ACTUALIZAR ESTADO EN BD
+      //  ACTUALIZAR ESTADO EN BD
       await this.gameRoomsService.updateRoomStatus(roomId, RoomStatus.IN_PROGRESS);
       
       const io = getSocketIOInstance();
@@ -215,7 +215,7 @@ class SocketIOManager {
         })),
       });
 
-      console.log(`🎯 Game started in room ${roomId} - Bets processed`);
+      console.log(` Game started in room ${roomId} - Bets processed`);
       
       await gameManager.startGame(
         roomId, 
@@ -228,7 +228,7 @@ class SocketIOManager {
       );
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to start game';
-      console.error(`❌ Error starting game in room ${roomId}:`, errorMessage);
+      console.error(` Error starting game in room ${roomId}:`, errorMessage);
       
       this.cancelCountdown(roomId);
       room.status = RoomStatus.CANCELLED;
@@ -250,7 +250,7 @@ class SocketIOManager {
     if (room) {
       room.status = RoomStatus.FINISHED;
       
-      // ⭐ ACTUALIZAR ESTADO EN BD
+      //  ACTUALIZAR ESTADO EN BD
       await this.gameRoomsService.updateRoomStatus(roomId, RoomStatus.FINISHED);
       
       setTimeout(() => {
@@ -259,7 +259,7 @@ class SocketIOManager {
         const io = getSocketIOInstance();
         io.emit('room:deleted', { roomId });
         
-        console.log(`🧹 Room cleaned up and deleted: ${roomId}`);
+        console.log(` Room cleaned up and deleted: ${roomId}`);
       }, 30000);
     }
   }
@@ -294,7 +294,7 @@ class SocketIOManager {
       this.cancelCountdown(roomId);
     }
 
-    console.log(`👋 Player ${userId} left room ${roomId}`);
+    console.log(` Player ${userId} left room ${roomId}`);
     
     return room;
   }
@@ -309,7 +309,7 @@ class SocketIOManager {
     const player = room.players.find(p => p.userId === userId);
     if (player) {
       player.isConnected = false;
-      console.log(`🔌 Player ${userId} disconnected from room ${roomId}`);
+      console.log(` Player ${userId} disconnected from room ${roomId}`);
     }
 
     const allDisconnected = room.players.every(p => !p.isConnected);
@@ -337,7 +337,7 @@ class SocketIOManager {
       const io = getSocketIOInstance();
       io.to(roomId).emit('countdown:cancelled', { roomId });
       
-      console.log(`❌ Countdown cancelled for room ${roomId}`);
+      console.log(` Countdown cancelled for room ${roomId}`);
     }
   }
 
@@ -349,7 +349,7 @@ class SocketIOManager {
     }
 
     this.rooms.delete(roomId);
-    console.log(`🗑️ Room deleted: ${roomId}`);
+    console.log(`️ Room deleted: ${roomId}`);
   }
 
   getAvailableRooms(): RoomData[] {

@@ -1,4 +1,4 @@
-import prisma from '../../config/prisma-client.config';
+﻿import prisma from '../../config/prisma-client.config';
 import { TransactionType, CreateTransactionData, TransactionSummary } from './interfaces/transaction.interface';
 
 export class PlayerTransactionsService {
@@ -62,7 +62,7 @@ export class PlayerTransactionsService {
       });
 
       console.log(
-        `💰 Transaction created: ${data.type} ${data.amount} coins for user ${data.userId} (${balanceBefore} → ${balanceAfter})`
+        ` Transaction created: ${data.type} ${data.amount} coins for user ${data.userId} (${balanceBefore} → ${balanceAfter})`
       );
 
       return transaction;
@@ -113,7 +113,7 @@ export class PlayerTransactionsService {
         transactions.push(transaction);
       }
 
-      console.log(`💰 Processed ${transactions.length} bets for room ${roomId}`);
+      console.log(` Processed ${transactions.length} bets for room ${roomId}`);
       return transactions;
     });
   }
@@ -136,7 +136,7 @@ export class PlayerTransactionsService {
         });
 
         if (!user) {
-          console.warn(`⚠️ User ${reward.userId} not found, skipping reward`);
+          console.warn(`️ User ${reward.userId} not found, skipping reward`);
           continue;
         }
 
@@ -165,7 +165,7 @@ export class PlayerTransactionsService {
         transactions.push(transaction);
 
         console.log(
-          `🏆 Reward distributed: ${reward.amount} coins to user ${reward.userId} (position ${reward.position})`
+          ` Reward distributed: ${reward.amount} coins to user ${reward.userId} (position ${reward.position})`
         );
       }
 

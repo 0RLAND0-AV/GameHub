@@ -1,4 +1,4 @@
-import { Socket } from 'socket.io';
+﻿import { Socket } from 'socket.io';
 import gameManager from '../game-manager';
 import { PlayerAnswerPayload, SocketErrorResponse } from '../../shared/types/socket-events.type';
 import { GameEventType } from '../../shared/types/game-enums.type';
@@ -10,7 +10,7 @@ export function handleTriviaGameplay(socket: Socket): void {
   // ============================================
   socket.on('player:answer', (payload: PlayerAnswerPayload) => {
     try {
-      console.log(`📥 player:answer received from ${payload.userId}`);
+      console.log(` player:answer received from ${payload.userId}`);
 
       if (!payload.roomId || !payload.userId || !payload.questionId || !payload.selectedOptionId) {
         throw new Error('Invalid answer payload');

@@ -1,4 +1,4 @@
-import prisma from '../../config/prisma-client.config';
+﻿import prisma from '../../config/prisma-client.config';
 import { RoomStatus } from '../../shared/types/game-enums.type';
 import { CreateRoomData } from './interfaces/game-room.interface';
 
@@ -21,7 +21,7 @@ export class GameRoomsService {
       },
     });
 
-    console.log(`✅ Room created in DB: ${roomId}`);
+    console.log(` Room created in DB: ${roomId}`);
     return room;
   }
 

@@ -1,7 +1,7 @@
-import { Server as SocketIOServer } from 'socket.io';
+﻿import { Server as SocketIOServer } from 'socket.io';
 import { Server as HTTPServer } from 'http';
 import { handleRoomConnection } from '../websockets/handlers/room-connection.handler';
-import { handleTriviaGameplay } from '../websockets/handlers/trivia-gameplay.handler'; // ⭐ NUEVO
+import { handleTriviaGameplay } from '../websockets/handlers/trivia-gameplay.handler'; //  NUEVO
 
 let io: SocketIOServer | null = null;
 
@@ -17,18 +17,18 @@ export function initSocketIO(server: HTTPServer): SocketIOServer {
   });
 
   io.on('connection', (socket) => {
-    console.log(`✅ Client connected: ${socket.id}`);
+    console.log(` Client connected: ${socket.id}`);
     
     // Registrar handlers
     handleRoomConnection(socket);
-    handleTriviaGameplay(socket); // ⭐ NUEVO
+    handleTriviaGameplay(socket); //  NUEVO
     
     socket.on('disconnect', (reason) => {
-      console.log(`❌ Client disconnected: ${socket.id} - Reason: ${reason}`);
+      console.log(` Client disconnected: ${socket.id} - Reason: ${reason}`);
     });
   });
 
-  console.log('✅ Socket.IO initialized with handlers');
+  console.log(' Socket.IO initialized with handlers');
   return io;
 }
 
