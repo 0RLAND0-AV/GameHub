@@ -3,231 +3,530 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GameHub Test Client</title>
+  <title>GameHub Cliente de Prueba</title>
   <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #0a0e27;
+      color: #e4e4e7;
       padding: 20px;
       min-height: 100vh;
     }
+    
     .container {
-      max-width: 1200px;
+      max-width: 1100px;
       margin: 0 auto;
-      background: white;
-      border-radius: 12px;
-      padding: 30px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      background: #13172e;
+      border: 1px solid #1e2441;
+      border-radius: 4px;
+      padding: 24px;
     }
-    h1 { color: #667eea; margin-bottom: 20px; }
-    h2 { color: #764ba2; margin-top: 30px; margin-bottom: 15px; }
-    .status {
-      padding: 10px;
-      border-radius: 6px;
+    
+    h1 { 
+      color: #f4f4f5; 
+      margin-bottom: 8px; 
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+    }
+    
+    h2 { 
+      color: #a1a1aa; 
+      margin-top: 32px; 
+      margin-bottom: 16px;
+      font-size: 14px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .header-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin-bottom: 20px;
-      font-weight: bold;
+      gap: 12px;
+      flex-wrap: wrap;
     }
-    .status.connected { background: #d4edda; color: #155724; }
-    .status.disconnected { background: #f8d7da; color: #721c24; }
+    
+    .status {
+      padding: 6px 12px;
+      border-radius: 2px;
+      font-weight: 500;
+      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .status.connected { background: #14532d; color: #86efac; border: 1px solid #15803d; }
+    .status.disconnected { background: #450a0a; color: #fca5a5; border: 1px solid #991b1b; }
+    
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+    
+    .user-info {
+      background: #1e2441;
+      padding: 12px 16px;
+      border-radius: 2px;
+      font-size: 13px;
+      color: #a1a1aa;
+      border: 1px solid #2a3150;
+    }
+    
     .form-group {
-      margin-bottom: 15px;
+      margin-bottom: 16px;
     }
+    
     label {
       display: block;
-      margin-bottom: 5px;
-      font-weight: 600;
-      color: #333;
+      margin-bottom: 6px;
+      font-weight: 500;
+      color: #a1a1aa;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
     }
+    
     input, button {
-      padding: 10px;
-      border-radius: 6px;
-      border: 1px solid #ddd;
-      font-size: 14px;
+      padding: 9px 14px;
+      border-radius: 2px;
+      border: 1px solid #2a3150;
+      font-size: 13px;
+      font-family: inherit;
     }
+    
     input {
       width: 100%;
-      max-width: 300px;
+      max-width: 280px;
+      background: #1e2441;
+      color: #e4e4e7;
     }
+    
+    input:focus {
+      outline: none;
+      border-color: #3b82f6;
+    }
+    
     button {
-      background: #667eea;
-      color: white;
-      border: none;
+      background: #1e40af;
+      color: #e4e4e7;
+      border: 1px solid #1d4ed8;
       cursor: pointer;
-      font-weight: 600;
-      transition: background 0.3s;
+      font-weight: 500;
+      transition: all 0.15s;
     }
-    button:hover { background: #764ba2; }
+    
+    button:hover { 
+      background: #1d4ed8;
+      border-color: #2563eb;
+    }
+    
+    button:active {
+      transform: translateY(1px);
+    }
+    
     button:disabled {
-      background: #ccc;
+      background: #27272a;
+      border-color: #3f3f46;
+      color: #52525b;
       cursor: not-allowed;
     }
-    .logs {
-      background: #f8f9fa;
-      border: 1px solid #dee2e6;
-      border-radius: 6px;
-      padding: 15px;
-      max-height: 300px;
-      overflow-y: auto;
-      font-family: 'Courier New', monospace;
-      font-size: 12px;
+    
+    .controls-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
     }
-    .log-entry {
-      padding: 5px;
-      border-bottom: 1px solid #e9ecef;
-    }
-    .log-entry:last-child { border-bottom: none; }
-    .log-entry.info { color: #0c5460; }
-    .log-entry.success { color: #155724; }
-    .log-entry.error { color: #721c24; }
+    
     .rooms-list {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 15px;
-      margin-top: 15px;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 12px;
+      margin: 16px 0;
     }
+    
     .room-card {
-      border: 2px solid #667eea;
-      border-radius: 8px;
-      padding: 15px;
-      background: #f8f9fa;
+      border: 1px solid #2a3150;
+      border-radius: 2px;
+      padding: 14px;
+      background: #1e2441;
+      transition: border-color 0.2s;
     }
-    .room-card h3 { color: #667eea; margin-bottom: 10px; }
-    .room-info { font-size: 14px; margin: 5px 0; }
+    
+    .room-card:hover {
+      border-color: #3b82f6;
+    }
+    
+    .room-card h3 { 
+      color: #f4f4f5; 
+      margin-bottom: 10px; 
+      font-size: 13px;
+      font-weight: 600;
+      font-family: 'Courier New', monospace;
+    }
+    
+    .room-info { 
+      font-size: 12px; 
+      margin: 6px 0;
+      color: #a1a1aa;
+      display: flex;
+      justify-content: space-between;
+    }
+    
+    .room-info strong {
+      color: #e4e4e7;
+      font-weight: 500;
+    }
+    
+    .room-card button { 
+      width: 100%; 
+      margin-top: 12px; 
+      padding: 7px;
+      font-size: 12px;
+    }
+    
+    .section {
+      margin-bottom: 24px;
+    }
+    
+    .game-area {
+      background: #1e2441;
+      border: 1px solid #2a3150;
+      border-radius: 2px;
+      padding: 20px;
+      margin: 20px 0;
+      display: none;
+    }
+    .game-area.active { display: block; }
+    
+    .countdown-display {
+      text-align: center;
+      font-size: 52px;
+      font-weight: 700;
+      color: #3b82f6;
+      margin: 20px 0;
+      font-variant-numeric: tabular-nums;
+    }
+    
+    .question-display {
+      background: #13172e;
+      border: 1px solid #2a3150;
+      border-radius: 2px;
+      padding: 20px;
+      margin: 16px 0;
+      display: none;
+    }
+    .question-display.active { display: block; }
+    
+    .question-text {
+      font-size: 16px;
+      font-weight: 500;
+      color: #f4f4f5;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+    
+    .question-number {
+      font-size: 11px;
+      color: #71717a;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    
+    .option-btn {
+      padding: 14px;
+      border: 1px solid #2a3150;
+      background: #1e2441;
+      color: #e4e4e7;
+      border-radius: 2px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.15s;
+      text-align: left;
+      font-size: 13px;
+    }
+    
+    .option-btn:hover {
+      border-color: #3b82f6;
+      background: #1e293b;
+    }
+    
+    .option-btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.4;
+    }
+    
+    .scoreboard {
+      background: #13172e;
+      border: 1px solid #2a3150;
+      border-radius: 2px;
+      padding: 16px;
+      margin: 16px 0;
+    }
+    
+    .scoreboard strong {
+      font-size: 12px;
+      color: #a1a1aa;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .score-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid #27272a;
+      font-size: 13px;
+    }
+    .score-item:last-child { border-bottom: none; }
+    
+    .score-name { font-weight: 500; color: #e4e4e7; }
+    .score-value { color: #3b82f6; font-weight: 600; font-variant-numeric: tabular-nums; }
+    
+    .logs {
+      background: #0a0e27;
+      border: 1px solid #1e2441;
+      border-radius: 2px;
+      padding: 12px;
+      max-height: 280px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+    }
+    
+    .log-entry {
+      padding: 4px 0;
+      margin: 2px 0;
+      line-height: 1.4;
+    }
+    .log-entry.info { color: #71717a; }
+    .log-entry.success { color: #4ade80; }
+    .log-entry.error { color: #f87171; }
+    .log-entry.warn { color: #fbbf24; }
+    
+    .empty-state {
+      color: #52525b;
+      padding: 32px;
+      text-align: center;
+      font-size: 13px;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>🎮 GameHub Test Client</h1>
-    <button onclick="loginUser()" style="margin-bottom: 20px;">🔐 Login</button>
-    <div id="status" class="status disconnected">
-      🔴 Disconnected
+    <h1>GameHub Cliente de Prueba</h1>
+    
+    <div class="header-info">
+      <div id="status" class="status disconnected">
+        <span class="status-dot"></span>
+        Desconectado
+      </div>
+      <button onclick="loginUser()" id="loginBtn">Iniciar Sesión</button>
     </div>
 
-    <h2>👤 User Configuration</h2>
-    <div class="form-group">
-      <label>User ID:</label>
-      <input type="text" id="userId" value="user_001">
-    </div>
-    <div class="form-group">
-      <label>Username:</label>
-      <input type="text" id="username" value="TestPlayer1">
+    <div class="user-info" id="userInfo">
+      No autenticado
     </div>
 
-    <h2>🏠 Room Actions</h2>
-    <div class="form-group">
-      <label>Bet Amount (10-1000):</label>
-      <input type="number" id="betAmount" value="50" min="10" max="1000">
+    <div class="section">
+      <h2>Controles de Sala</h2>
+      <div class="form-group">
+        <label>Monto de Apuesta (10-100)</label>
+        <input type="number" id="betAmount" value="50" min="10" max="100">
+      </div>
+      <div class="controls-group">
+        <button onclick="createRoom()" id="createBtn">Crear Sala</button>
+        <button onclick="listRooms()">Actualizar Salas</button>
+        <button onclick="leaveRoom()" id="leaveBtn" style="display: none;">Salir de Sala</button>
+      </div>
+      
+      <div class="form-group" style="margin-top: 16px;">
+        <label>Unirse a Sala por ID</label>
+        <input type="text" id="roomIdToJoin" placeholder="room_xxx">
+        <button onclick="joinRoom()" style="width: 100%; margin-top: 8px;">Unirse</button>
+      </div>
     </div>
-    <button onclick="createRoom()">Create Room</button>
-    <button onclick="listRooms()">List Available Rooms</button>
 
-    <div class="form-group" style="margin-top: 15px;">
-      <label>Room ID to Join:</label>
-      <input type="text" id="roomIdToJoin" placeholder="room_xxx">
-    </div>
-    <button onclick="joinRoom()">Join Room</button>
-    <button onclick="leaveRoom()">Leave Current Room</button>
-
-    <h2>📋 Available Rooms</h2>
-    <div id="roomsList" class="rooms-list">
-      <p style="color: #999;">No rooms available yet...</p>
+    <div class="section">
+      <h2>Salas Disponibles</h2>
+      <div id="roomsList" class="rooms-list">
+        <p class="empty-state">No hay salas disponibles</p>
+      </div>
     </div>
 
-    <h2>📜 Event Logs</h2>
-    <div id="logs" class="logs">
-      <div class="log-entry info">Waiting for connection...</div>
+    <div id="gameArea" class="game-area">
+      <h2>Sesión de Juego</h2>
+      
+      <div id="countdownDisplay" class="countdown-display" style="display: none;">
+        <span id="countdownSeconds">30</span>
+      </div>
+      
+      <div id="questionDisplay" class="question-display">
+        <div class="question-number" id="questionNum"></div>
+        <div class="question-text" id="questionText"></div>
+        <div class="options-grid" id="optionsGrid"></div>
+      </div>
+      
+      <div id="scoreboard" class="scoreboard" style="display: none;">
+        <strong>Tabla de Puntuaciones</strong>
+        <div id="scoresList"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Registro de Eventos</h2>
+      <button onclick="clearLogs()" style="margin-bottom: 10px; font-size: 11px; padding: 6px 12px;">Limpiar</button>
+      <div id="logs" class="logs">
+        <div class="log-entry info">[INIT] Esperando conexión...</div>
+      </div>
     </div>
   </div>
 
   <script>
     let socket;
     let currentRoomId = null;
+    let currentQuestion = null;
+    let questionStartTime = null;
+    let authToken = null;
+    let currentUser = null;
 
-    // Conectar al servidor
-    socket = io('http://localhost:3000');
+    socket = io('http://localhost:3000', {
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      reconnectionAttempts: 5
+    });
 
     socket.on('connect', () => {
       updateStatus(true);
-      addLog('✅ Connected to server', 'success');
-      listRooms(); // Cargar salas disponibles
+      addLog('Conectado al servidor', 'success');
     });
 
     socket.on('disconnect', () => {
       updateStatus(false);
-      addLog('❌ Disconnected from server', 'error');
+      addLog('Desconectado del servidor', 'error');
     });
 
-    // Escuchar evento de sala creada
+    socket.on('connect_error', (error) => {
+      addLog(`Error de conexión: ${error}`, 'error');
+    });
+
     socket.on('room:created', (data) => {
-      addLog(`✅ Room created: ${data.roomId}`, 'success');
+      addLog(`Sala creada: ${data.roomId}`, 'success');
       currentRoomId = data.roomId;
-      addLog(`Current Room ID: ${currentRoomId}`, 'info');
+      document.getElementById('leaveBtn').style.display = 'inline-block';
+      listRooms();
     });
 
-    // Escuchar evento de jugador unido
     socket.on('player:joined', (data) => {
-      addLog(`✅ Joined room: ${data.roomId}`, 'success');
+      addLog(`Te uniste a la sala: ${data.roomId}`, 'success');
+      addLog(`Jugadores: ${data.currentPlayers}/${data.maxPlayers} | Pozo: ${data.totalPot}`, 'info');
       currentRoomId = data.roomId;
-      addLog(`Players: ${data.currentPlayers}/${data.maxPlayers}`, 'info');
+      document.getElementById('leaveBtn').style.display = 'inline-block';
+      document.getElementById('roomIdToJoin').value = '';
+      listRooms();
     });
 
-    // Escuchar actualizaciones de sala
     socket.on('room:updated', (data) => {
       if (data.availableRooms) {
         displayRooms(data.availableRooms);
-        addLog(`📋 Rooms list updated (${data.availableRooms.length} available)`, 'info');
-      } else {
-        addLog(`🔄 Room updated`, 'info');
       }
     });
 
-    // Escuchar jugador que se fue
     socket.on('player:left', (data) => {
-      if (data.success) {
-        addLog(`✅ Left room successfully`, 'success');
-        currentRoomId = null;
-      } else {
-        addLog(`👋 Player left: ${data.userId}`, 'info');
-      }
+      addLog(`Saliste de la sala`, 'success');
+      currentRoomId = null;
+      document.getElementById('leaveBtn').style.display = 'none';
+      document.getElementById('gameArea').classList.remove('active');
+      listRooms();
     });
 
-    // Escuchar countdown iniciado
-    socket.on('countdown:started', (data) => {
-      addLog(`⏱️ Countdown started: ${data.secondsRemaining}s`, 'info');
-    });
-
-    // Escuchar tick de countdown
-    socket.on('countdown:tick', (data) => {
-      addLog(`⏱️ Countdown: ${data.secondsRemaining}s remaining`, 'info');
-    });
-
-    // Escuchar juego iniciado
-    socket.on('game:started', (data) => {
-      addLog(`🎯 GAME STARTED in room ${data.roomId}!`, 'success');
-      addLog(`Players: ${JSON.stringify(data.players)}`, 'info');
-    });
-
-    // Escuchar lista de salas
     socket.on('rooms:list', (data) => {
-      displayRooms(data.availableRooms);
+      displayRooms(data.availableRooms || []);
     });
 
-    // Escuchar errores
+    socket.on('countdown:started', (data) => {
+      addLog(`Cuenta regresiva iniciada: ${data.secondsRemaining}s`, 'warn');
+      showCountdown(data.secondsRemaining);
+    });
+
+    socket.on('countdown:tick', (data) => {
+      updateCountdown(data.secondsRemaining);
+      addLog(`Cuenta regresiva: ${data.secondsRemaining}s`, 'warn');
+      listRooms();
+    });
+
+    socket.on('game:started', (data) => {
+      addLog(`Juego iniciado`, 'success');
+      document.getElementById('gameArea').classList.add('active');
+      document.getElementById('questionDisplay').classList.remove('active');
+      document.getElementById('countdownDisplay').style.display = 'none';
+      updateScoreboard([]);
+    });
+
+    socket.on('question:displayed', (data) => {
+      currentQuestion = data;
+      questionStartTime = Date.now();
+      displayQuestion(data);
+      addLog(`Pregunta ${data.questionNumber}: ${data.questionText}`, 'info');
+    });
+
+    socket.on('question:results', (data) => {
+      addLog(`Resultados de la pregunta recibidos`, 'success');
+      data.playerResults.forEach(result => {
+        const status = result.isCorrect ? 'CORRECTA' : 'INCORRECTA';
+        const msg = `[${status}] ${result.username}: +${result.pointsEarned} pts | Total: ${result.totalScore}`;
+        addLog(msg, result.isCorrect ? 'success' : 'info');
+      });
+      updateScoreboard(data.playerResults);
+      document.getElementById('questionDisplay').classList.remove('active');
+      currentQuestion = null;
+    });
+
+    socket.on('game:finished', (data) => {
+      addLog(`Juego finalizado`, 'success');
+      addLog(`Pozo total: ${data.totalPot}`, 'info');
+      
+      data.finalRanking.forEach(rank => {
+        const prizeText = rank.prizeWon > 0 ? `+${rank.prizeWon} monedas` : 'Sin premio';
+        addLog(
+          `#${rank.position} ${rank.username}: ${rank.finalScore} pts | ${rank.correctAnswers}/${rank.totalQuestions} (${rank.accuracy}%) | ${prizeText}`,
+          'success'
+        );
+      });
+      
+      document.getElementById('gameArea').classList.remove('active');
+      currentRoomId = null;
+      document.getElementById('leaveBtn').style.display = 'none';
+    });
+
     socket.on('error', (data) => {
-      addLog(`❌ Error: ${data.message} (${data.code})`, 'error');
+      addLog(`Error: ${data.message}`, 'error');
     });
 
-    // Funciones de UI
     function updateStatus(connected) {
       const statusDiv = document.getElementById('status');
       if (connected) {
         statusDiv.className = 'status connected';
-        statusDiv.textContent = '🟢 Connected';
+        statusDiv.innerHTML = '<span class="status-dot"></span>Conectado';
       } else {
         statusDiv.className = 'status disconnected';
-        statusDiv.textContent = '🔴 Disconnected';
+        statusDiv.innerHTML = '<span class="status-dot"></span>Desconectado';
       }
     }
 
@@ -241,35 +540,91 @@
       logsDiv.scrollTop = logsDiv.scrollHeight;
     }
 
+    function clearLogs() {
+      document.getElementById('logs').innerHTML = '';
+    }
+
     function displayRooms(rooms) {
       const roomsListDiv = document.getElementById('roomsList');
       if (!rooms || rooms.length === 0) {
-        roomsListDiv.innerHTML = '<p style="color: #999;">No rooms available</p>';
+        roomsListDiv.innerHTML = '<p class="empty-state">No hay salas disponibles</p>';
         return;
       }
 
       roomsListDiv.innerHTML = rooms.map(room => `
         <div class="room-card">
-          <h3>Room ${room.roomId.substring(0, 15)}...</h3>
-          <div class="room-info"><strong>Status:</strong> ${room.status}</div>
-          <div class="room-info"><strong>Bet:</strong> ${room.betAmount} coins</div>
-          <div class="room-info"><strong>Players:</strong> ${room.currentPlayers}/${room.maxPlayers}</div>
-          <div class="room-info"><strong>Pot:</strong> ${room.totalPot} coins</div>
-          ${room.countdownSeconds ? `<div class="room-info" style="color: orange;"><strong>Countdown:</strong> ${room.countdownSeconds}s</div>` : ''}
-          <button onclick="joinSpecificRoom('${room.roomId}')" style="margin-top: 10px; width: 100%;">Join</button>
+          <h3>${room.roomId.substring(0, 16)}...</h3>
+          <div class="room-info"><span>Estado</span><strong>${room.status}</strong></div>
+          <div class="room-info"><span>Jugadores</span><strong>${room.currentPlayers}/${room.maxPlayers}</strong></div>
+          <div class="room-info"><span>Apuesta</span><strong>${room.betAmount}</strong></div>
+          <div class="room-info"><span>Pozo</span><strong>${room.totalPot}</strong></div>
+          ${room.countdownSeconds ? `<div class="room-info" style="color: #fbbf24;"><span>Cuenta regresiva</span><strong>${room.countdownSeconds}s</strong></div>` : ''}
+          <button onclick="joinSpecificRoom('${room.roomId}')">Unirse a Sala</button>
         </div>
       `).join('');
     }
 
-    // Acciones
-    function createRoom() {
-      const userId = document.getElementById('userId').value;
-      const username = document.getElementById('username').value;
-      const betAmount = parseInt(document.getElementById('betAmount').value);
+    function displayQuestion(question) {
+      document.getElementById('questionNum').textContent = `Pregunta ${question.questionNumber}/${question.totalQuestions} - ${question.timeLimit}s`;
+      document.getElementById('questionText').textContent = question.questionText;
+      
+      const optionsGrid = document.getElementById('optionsGrid');
+      optionsGrid.innerHTML = question.options.map(opt => `
+        <button class="option-btn" onclick="answerQuestion('${opt.optionId}', '${question.questionId}')">
+          ${opt.optionText}
+        </button>
+      `).join('');
+      
+      document.getElementById('questionDisplay').classList.add('active');
+    }
 
+    function updateScoreboard(results) {
+      if (!results || results.length === 0) {
+        document.getElementById('scoreboard').style.display = 'none';
+        return;
+      }
+      
+      document.getElementById('scoreboard').style.display = 'block';
+      const scoresList = document.getElementById('scoresList');
+      scoresList.innerHTML = results
+        .sort((a, b) => b.totalScore - a.totalScore)
+        .map((r, i) => `
+          <div class="score-item">
+            <span class="score-name">${i + 1}. ${r.username}</span>
+            <span class="score-value">${r.totalScore}</span>
+          </div>
+        `).join('');
+    }
+
+    function showCountdown(seconds) {
+      const countdownDisplay = document.getElementById('countdownDisplay');
+      countdownDisplay.style.display = 'block';
+      document.getElementById('countdownSeconds').textContent = seconds;
+    }
+
+    function updateCountdown(seconds) {
+      if (seconds > 0) {
+        document.getElementById('countdownSeconds').textContent = seconds;
+      } else {
+        document.getElementById('countdownDisplay').style.display = 'none';
+      }
+    }
+
+    function createRoom() {
+      if (!currentUser) {
+        alert('Por favor inicia sesión primero');
+        return;
+      }
+      
+      const betAmount = parseInt(document.getElementById('betAmount').value);
+      if (betAmount < 10 || betAmount > 100) {
+        alert('La apuesta debe estar entre 10 y 100');
+        return;
+      }
+      
       socket.emit('room:create', {
-        userId,
-        username,
+        userId: currentUser.userId,
+        username: currentUser.username,
         gameTypeId: 'trivia-showdown',
         betAmount
       });
@@ -282,149 +637,98 @@
     function joinRoom() {
       const roomId = document.getElementById('roomIdToJoin').value;
       if (!roomId) {
-        alert('Please enter a Room ID');
+        alert('Ingresa un ID de sala');
         return;
       }
       joinSpecificRoom(roomId);
     }
 
     function joinSpecificRoom(roomId) {
-      const userId = document.getElementById('userId').value;
-      const username = document.getElementById('username').value;
-
+      if (!currentUser) {
+        alert('Por favor inicia sesión primero');
+        return;
+      }
+      
       socket.emit('room:join', {
         roomId,
-        userId,
-        username
+        userId: currentUser.userId,
+        username: currentUser.username
       });
     }
 
     function leaveRoom() {
       if (!currentRoomId) {
-        alert('You are not in any room');
+        alert('No estás en una sala');
         return;
       }
-
-      const userId = document.getElementById('userId').value;
+      
       socket.emit('room:leave', {
         roomId: currentRoomId,
-        userId
+        userId: currentUser.userId
       });
     }
 
-  // ============================================
-  // EVENTOS DE GAMEPLAY
-  // ============================================
-  let currentQuestion = null;
-  let questionStartTime = null;
-
-  socket.on('question:displayed', (data) => {
-    currentQuestion = data;
-    questionStartTime = Date.now();
-    addLog(`📋 Question ${data.questionNumber}/${data.totalQuestions}: ${data.questionText}`, 'info');
-    addLog(`⏱️ Time limit: ${data.timeLimit}s`, 'info');
-    
-    // Simular respuesta automática aleatoria después de 2-8 segundos
-    const randomDelay = Math.random() * 6000 + 2000;
-    setTimeout(() => {
-      if (currentQuestion && currentQuestion.questionId === data.questionId) {
-        answerRandomly();
-      }
-    }, randomDelay);
-  });
-
-  socket.on('question:results', (data) => {
-    addLog(`✅ Results for question received`, 'success');
-    data.playerResults.forEach(result => {
-      const icon = result.isCorrect ? '✅' : '❌';
-      addLog(
-        `${icon} ${result.username}: ${result.isCorrect ? 'Correct' : 'Wrong'} | +${result.pointsEarned} pts | Total: ${result.totalScore}`,
-        result.isCorrect ? 'success' : 'info'
-      );
-    });
-  });
-
-  socket.on('game:finished', (data) => {
-    addLog(`🏁 GAME FINISHED!`, 'success');
-    addLog(`📊 Final Ranking:`, 'info');
-    data.finalRanking.forEach(rank => {
-      addLog(
-        `${rank.position}. ${rank.username} - ${rank.finalScore} pts (${rank.correctAnswers}/${rank.totalQuestions} correct, ${rank.accuracy}% accuracy)`,
-        'success'
-      );
-    });
-  });
-
-  function answerRandomly() {
-    if (!currentQuestion || !currentRoomId) return;
-    
-    const randomOption = currentQuestion.options[Math.floor(Math.random() * currentQuestion.options.length)];
-    const responseTime = (Date.now() - questionStartTime) / 1000;
-    
-    const userId = document.getElementById('userId').value;
-    
-    socket.emit('player:answer', {
-      roomId: currentRoomId,
-      userId: userId,
-      questionId: currentQuestion.questionId,
-      selectedOptionId: randomOption.optionId,
-      responseTimeSeconds: responseTime
-    });
-    
-    addLog(`📤 Answered: ${randomOption.optionText} (${responseTime.toFixed(2)}s)`, 'info');
-    currentQuestion = null;
-  }
-    
-  let authToken = null;
-
-  // Función para hacer login
-  async function loginUser() {
-    const email = prompt('Enter email:', 'player1@test.com');
-    const password = prompt('Enter password:', 'password123');
-    
-    try {
-      const response = await fetch('http://localhost:3000/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+    function answerQuestion(optionId, questionId) {
+      if (!currentRoomId || !currentUser || !currentQuestion) return;
+      
+      const responseTime = (Date.now() - questionStartTime) / 1000;
+      
+      socket.emit('player:answer', {
+        roomId: currentRoomId,
+        userId: currentUser.userId,
+        questionId,
+        selectedOptionId: optionId,
+        responseTimeSeconds: responseTime
       });
       
-      const data = await response.json();
+      addLog(`Respondiste en ${responseTime.toFixed(2)}s`, 'info');
+      document.getElementById('questionDisplay').classList.remove('active');
       
-      if (data.ok) {
-        authToken = data.data.token;
-        document.getElementById('userId').value = data.data.user.userId;
-        document.getElementById('username').value = data.data.user.username;
-        addLog(`✅ Logged in as ${data.data.user.username}`, 'success');
-        alert(`Logged in! Coins: ${data.data.user.coins}`);
-      } else {
-        addLog(`❌ Login failed: ${data.message}`, 'error');
-      }
-    } catch (error) {
-      addLog(`❌ Login error: ${error.message}`, 'error');
+      document.querySelectorAll('.option-btn').forEach(btn => btn.disabled = true);
     }
-  }  
-    
-// ============================================
-// MOSTRAR PREGUNTAS CON RESPUESTAS CORRECTAS
-// ============================================
-socket.on('game:finished', (data) => {
-  addLog(`🏁 GAME FINISHED!`, 'success');
-  addLog(`💰 Total Pot: ${data.totalPot} coins`, 'info');
-  addLog(`\n📊 Final Ranking:`, 'info');
-  
-  data.finalRanking.forEach(rank => {
-    const medal = rank.position === 1 ? '🥇' : rank.position === 2 ? '🥈' : rank.position === 3 ? '🥉' : '📍';
-    const prizeText = rank.prizeWon > 0 ? `+${rank.prizeWon} coins` : 'No prize';
-    
-    addLog(
-      `${medal} ${rank.position}. ${rank.username} - ${rank.finalScore} pts | ${rank.correctAnswers}/${rank.totalQuestions} correct (${rank.accuracy}%) | ${prizeText}`,
-      rank.prizeWon > 0 ? 'success' : 'info'
-    );
-  });
-});
+
+    async function loginUser() {
+      const email = prompt('Ingresa tu email:', 'player1@test.com');
+      if (!email) return;
+      
+      const password = prompt('Ingresa tu contraseña:', 'password123');
+      if (!password) return;
+      
+      try {
+        const response = await fetch('http://localhost:3000/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        
+        const data = await response.json();
+        
+        if (data.ok) {
+          authToken = data.data.token;
+          currentUser = {
+            userId: data.data.user.userId,
+            username: data.data.user.username,
+            email: data.data.user.email,
+            coins: data.data.user.coins
+          };
+          
+          document.getElementById('userInfo').innerHTML = `
+            <strong>${currentUser.username}</strong> | ${currentUser.coins} monedas | ${currentUser.userId}
+          `;
+          
+          document.getElementById('loginBtn').style.display = 'none';
+          
+          addLog(`Sesión iniciada como ${currentUser.username}`, 'success');
+          listRooms();
+        } else {
+          addLog(`Login falló: ${data.message}`, 'error');
+          alert('Login falló: ' + data.message);
+        }
+      } catch (error) {
+        addLog(`Error: ${error.message}`, 'error');
+        alert('Error de login: ' + error.message);
+      }
+    }
   </script>
-
-
 </body>
 </html>
