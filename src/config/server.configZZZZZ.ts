@@ -1,7 +1,7 @@
 import bodyParser from 'body-parser'
 import express from 'express'
 
-import AppRoutes from './server.routes'
+import AppRoutes from './server.routesZZZZZ'
 
 const app = express()
     

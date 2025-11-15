@@ -11,13 +11,12 @@ import {
 export function handleRoomConnection(socket: Socket): void {
   
   // ============================================
-  // CREAR SALA
+  // CREAR SALA (ACTUALIZADO CON ASYNC)
   // ============================================
-  socket.on('room:create', (payload: CreateRoomPayload) => {
+  socket.on('room:create', async (payload: CreateRoomPayload) => {
     try {
       console.log(`📥 room:create received from ${payload.username}`);
       
-      // Validaciones básicas
       if (!payload.userId || !payload.username || !payload.betAmount) {
         throw new Error('Invalid payload');
       }
@@ -26,15 +25,12 @@ export function handleRoomConnection(socket: Socket): void {
         throw new Error('Bet amount must be between 10 and 1000');
       }
 
-      const room = socketIOManager.createRoom(payload, socket.id);
+      const room = await socketIOManager.createRoom(payload, socket.id); // ⭐ AWAIT
       
-      // Unir el socket a la sala de Socket.IO
       socket.join(room.roomId);
       
-      // Emitir evento de sala creada al creador
       socket.emit(GameEventType.ROOM_CREATED, room);
       
-      // Broadcast a todos los clientes que hay una nueva sala disponible
       const io = getSocketIOInstance();
       io.emit(GameEventType.ROOM_UPDATED, {
         availableRooms: socketIOManager.getAvailableRooms(),
@@ -50,9 +46,9 @@ export function handleRoomConnection(socket: Socket): void {
   });
 
   // ============================================
-  // UNIRSE A SALA
+  // UNIRSE A SALA (ACTUALIZADO CON ASYNC)
   // ============================================
-  socket.on('room:join', (payload: JoinRoomPayload) => {
+  socket.on('room:join', async (payload: JoinRoomPayload) => {
     try {
       console.log(`📥 room:join received: ${payload.username} -> ${payload.roomId}`);
       
@@ -60,19 +56,15 @@ export function handleRoomConnection(socket: Socket): void {
         throw new Error('Invalid payload');
       }
 
-      const room = socketIOManager.joinRoom(payload, socket.id);
+      const room = await socketIOManager.joinRoom(payload, socket.id); // ⭐ AWAIT
       
-      // Unir el socket a la sala
       socket.join(room.roomId);
       
-      // Notificar al jugador que se unió
       socket.emit(GameEventType.PLAYER_JOINED, room);
       
-      // Notificar a todos en la sala que un nuevo jugador se unió
       const io = getSocketIOInstance();
       socket.to(room.roomId).emit(GameEventType.ROOM_UPDATED, room);
       
-      // Actualizar lista de salas disponibles para todos
       io.emit(GameEventType.ROOM_UPDATED, {
         availableRooms: socketIOManager.getAvailableRooms(),
       });
@@ -85,7 +77,7 @@ export function handleRoomConnection(socket: Socket): void {
       } as SocketErrorResponse);
     }
   });
-
+  
   // ============================================
   // SALIR DE SALA
   // ============================================

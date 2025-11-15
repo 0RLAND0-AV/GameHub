@@ -377,33 +377,52 @@
     
   let authToken = null;
 
-// Función para hacer login
-async function loginUser() {
-  const email = prompt('Enter email:', 'player1@test.com');
-  const password = prompt('Enter password:', 'password123');
-  
-  try {
-    const response = await fetch('http://localhost:3000/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
-    });
+  // Función para hacer login
+  async function loginUser() {
+    const email = prompt('Enter email:', 'player1@test.com');
+    const password = prompt('Enter password:', 'password123');
     
-    const data = await response.json();
-    
-    if (data.ok) {
-      authToken = data.data.token;
-      document.getElementById('userId').value = data.data.user.userId;
-      document.getElementById('username').value = data.data.user.username;
-      addLog(`✅ Logged in as ${data.data.user.username}`, 'success');
-      alert(`Logged in! Coins: ${data.data.user.coins}`);
-    } else {
-      addLog(`❌ Login failed: ${data.message}`, 'error');
+    try {
+      const response = await fetch('http://localhost:3000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      
+      const data = await response.json();
+      
+      if (data.ok) {
+        authToken = data.data.token;
+        document.getElementById('userId').value = data.data.user.userId;
+        document.getElementById('username').value = data.data.user.username;
+        addLog(`✅ Logged in as ${data.data.user.username}`, 'success');
+        alert(`Logged in! Coins: ${data.data.user.coins}`);
+      } else {
+        addLog(`❌ Login failed: ${data.message}`, 'error');
+      }
+    } catch (error) {
+      addLog(`❌ Login error: ${error.message}`, 'error');
     }
-  } catch (error) {
-    addLog(`❌ Login error: ${error.message}`, 'error');
-  }
-}  
+  }  
+    
+// ============================================
+// MOSTRAR PREGUNTAS CON RESPUESTAS CORRECTAS
+// ============================================
+socket.on('game:finished', (data) => {
+  addLog(`🏁 GAME FINISHED!`, 'success');
+  addLog(`💰 Total Pot: ${data.totalPot} coins`, 'info');
+  addLog(`\n📊 Final Ranking:`, 'info');
+  
+  data.finalRanking.forEach(rank => {
+    const medal = rank.position === 1 ? '🥇' : rank.position === 2 ? '🥈' : rank.position === 3 ? '🥉' : '📍';
+    const prizeText = rank.prizeWon > 0 ? `+${rank.prizeWon} coins` : 'No prize';
+    
+    addLog(
+      `${medal} ${rank.position}. ${rank.username} - ${rank.finalScore} pts | ${rank.correctAnswers}/${rank.totalQuestions} correct (${rank.accuracy}%) | ${prizeText}`,
+      rank.prizeWon > 0 ? 'success' : 'info'
+    );
+  });
+});
   </script>
 
 

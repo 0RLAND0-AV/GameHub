@@ -6,6 +6,12 @@ export enum RoomStatus {
   CANCELLED = 'CANCELLED',
 }
 
+export enum GameSessionStatus {
+  IN_PROGRESS = 'IN_PROGRESS',
+  FINISHED = 'FINISHED',
+  CANCELLED = 'CANCELLED',
+}
+
 export enum PlayerConnectionStatus {
   CONNECTED = 'CONNECTED',
   DISCONNECTED = 'DISCONNECTED',

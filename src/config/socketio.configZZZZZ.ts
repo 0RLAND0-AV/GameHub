@@ -1,6 +1,6 @@
 import { Server as SocketIOServer, Socket } from 'socket.io'
 import http from 'http'
-import Server from './server.config'
+import Server from './server.configZZZZZ'
 import { ENV } from './environment.config';
 // chatService
 

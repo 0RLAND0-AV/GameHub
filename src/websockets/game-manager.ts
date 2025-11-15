@@ -9,15 +9,24 @@ import {
   GameResultsPayload,
   FinalPlayerRanking,
 } from '../shared/types/socket-events.type';
+import { PlayerTransactionsService } from '../modules/player-transactions/player-transactions.service';
+import { GameHistoryService } from '../modules/game-history/game-history.service';
+import { GameSessionsService } from '../modules/game-sessions/game-sessions.service';
+import { UsersService } from '../modules/users/users.service';
+import socketIOManager from './socketio-manager';
+import { GameRoomsService } from '../modules/game-rooms/game-rooms.service'; // ⭐ AGREGAR
 
 interface GameState {
   roomId: string;
+  gameSessionId?: string; // ⭐ NUEVO: Almacenar ID de sesión real
   currentQuestionIndex: number;
   questions: QuestionData[];
   playerScores: Map<string, PlayerScore>;
   questionStartTime?: number;
   questionTimer?: NodeJS.Timeout;
   playerAnswers: Map<string, PlayerAnswerData>;
+  betAmount: number; // ⭐ NUEVO
+  totalPot: number;  // ⭐ NUEVO
 }
 
 interface PlayerScore {
@@ -36,17 +45,28 @@ interface PlayerAnswerData {
 
 class GameManager {
   private games: Map<string, GameState> = new Map();
+  private transactionsService: PlayerTransactionsService;
+  private gameHistoryService: GameHistoryService;
+  private gameSessionsService: GameSessionsService; // ⭐ NUEVO
+  private usersService: UsersService;
+  private gameRoomsService: GameRoomsService; // ⭐ AGREGAR
+
+  constructor() {
+    this.transactionsService = new PlayerTransactionsService();
+    this.gameHistoryService = new GameHistoryService();
+    this.gameSessionsService = new GameSessionsService(); // ⭐ NUEVO
+    this.usersService = new UsersService();
+    this.gameRoomsService = new GameRoomsService(); // ⭐ AGREGAR
+  }
 
   // ============================================
-  // INICIAR JUEGO
+  // INICIAR JUEGO (ACTUALIZADO)
   // ============================================
-  startGame(roomId: string, players: { userId: string; username: string }[]): void {
+  async startGame(roomId: string, players: { userId: string; username: string }[], betAmount: number, totalPot: number): Promise<void> {
     console.log(`🎮 Initializing game for room ${roomId}`);
 
-    // Generar preguntas aleatorias
     const questions = this.generateRandomQuestions(ENV.QUESTIONS_PER_GAME);
 
-    // Inicializar puntajes de jugadores
     const playerScores = new Map<string, PlayerScore>();
     players.forEach(player => {
       playerScores.set(player.userId, {
@@ -57,18 +77,29 @@ class GameManager {
       });
     });
 
-    // Crear estado del juego
+    // ⭐ CREAR SESIÓN DE JUEGO EN BD
+    let gameSessionId: string | undefined;
+    try {
+      const gameSession = await this.gameSessionsService.createGameSession(roomId);
+      gameSessionId = gameSession.id;
+    } catch (error) {
+      console.error(`❌ Failed to create game session for room ${roomId}:`, error);
+      throw error;
+    }
+
     const gameState: GameState = {
       roomId,
+      gameSessionId,        // ⭐ GUARDAR ID DE SESIÓN
       currentQuestionIndex: 0,
       questions,
       playerScores,
       playerAnswers: new Map(),
+      betAmount,      // ⭐ NUEVO
+      totalPot,       // ⭐ NUEVO
     };
 
     this.games.set(roomId, gameState);
 
-    // Iniciar primera pregunta después de 3 segundos
     setTimeout(() => {
       this.displayNextQuestion(roomId);
     }, 3000);
@@ -81,13 +112,11 @@ class GameManager {
     const game = this.games.get(roomId);
     if (!game) return;
 
-    // Verificar si hay más preguntas
     if (game.currentQuestionIndex >= game.questions.length) {
       this.finishGame(roomId);
       return;
     }
 
-    // Limpiar respuestas de la pregunta anterior
     game.playerAnswers.clear();
 
     const currentQuestion = game.questions[game.currentQuestionIndex];
@@ -100,7 +129,6 @@ class GameManager {
       `📋 Question ${game.currentQuestionIndex + 1}/${game.questions.length} displayed in room ${roomId}`
     );
 
-    // Timer automático para pasar a resultados
     game.questionTimer = setTimeout(() => {
       this.showQuestionResults(roomId);
     }, ENV.TIME_PER_QUESTION * 1000);
@@ -116,13 +144,11 @@ class GameManager {
       return;
     }
 
-    // Verificar que no haya respondido ya
     if (game.playerAnswers.has(payload.userId)) {
       console.log(`⚠️ Player ${payload.userId} already answered`);
       return;
     }
 
-    // Guardar respuesta
     game.playerAnswers.set(payload.userId, {
       userId: payload.userId,
       selectedOptionId: payload.selectedOptionId,
@@ -134,17 +160,14 @@ class GameManager {
       `✅ Player ${payload.userId} answered in ${payload.responseTimeSeconds}s`
     );
 
-    // Si todos respondieron, mostrar resultados inmediatamente
     const totalPlayers = game.playerScores.size;
     const answeredPlayers = game.playerAnswers.size;
 
     if (answeredPlayers === totalPlayers) {
-      // Cancelar timer automático
       if (game.questionTimer) {
         clearTimeout(game.questionTimer);
         game.questionTimer = undefined;
       }
-      // Mostrar resultados inmediatamente
       this.showQuestionResults(payload.roomId);
     }
   }
@@ -168,20 +191,18 @@ class GameManager {
 
     const playerResults: PlayerQuestionResult[] = [];
 
-    // Calcular resultados para cada jugador
     game.playerScores.forEach((playerScore, userId) => {
       const answer = game.playerAnswers.get(userId);
       
       let isCorrect = false;
       let pointsEarned = 0;
-      let responseTime = ENV.TIME_PER_QUESTION; // Tiempo máximo si no respondió
+      let responseTime = ENV.TIME_PER_QUESTION;
 
       if (answer) {
         isCorrect = answer.selectedOptionId === correctOption.optionId;
         responseTime = answer.responseTimeSeconds;
 
         if (isCorrect) {
-          // Calcular puntos: 10 base + bonus de velocidad
           const speedBonus = Math.max(0, (ENV.TIME_PER_QUESTION - responseTime)) * ENV.SPEED_BONUS_MULTIPLIER;
           pointsEarned = ENV.BASE_POINTS + Math.round(speedBonus);
 
@@ -200,7 +221,6 @@ class GameManager {
       });
     });
 
-    // Ordenar por puntaje para mostrar ranking actual
     playerResults.sort((a, b) => b.totalScore - a.totalScore);
 
     const resultsPayload: QuestionResultsPayload = {
@@ -214,7 +234,6 @@ class GameManager {
 
     console.log(`📊 Results sent for question ${game.currentQuestionIndex + 1}`);
 
-    // Pasar a siguiente pregunta después de 5 segundos
     setTimeout(() => {
       if (game) {
         game.currentQuestionIndex++;
@@ -224,9 +243,9 @@ class GameManager {
   }
 
   // ============================================
-  // FINALIZAR JUEGO
+  // FINALIZAR JUEGO (ACTUALIZADO CON PREMIOS)
   // ============================================
-  private finishGame(roomId: string): void {
+  private async finishGame(roomId: string): Promise<void> {
     const game = this.games.get(roomId);
     if (!game) return;
 
@@ -236,17 +255,27 @@ class GameManager {
     const playersArray = Array.from(game.playerScores.values());
     playersArray.sort((a, b) => b.totalScore - a.totalScore);
 
+    // ⭐ CALCULAR DISTRIBUCIÓN DE PREMIOS
+    const prizeDistribution = this.calculatePrizeDistribution(
+      playersArray,
+      game.totalPot
+    );
+
     // Asignar posiciones y premios
     const finalRanking: FinalPlayerRanking[] = [];
+    const gameHistoryData = [] as any;
+    const rewardsToDistribute = [] as any;
+
     let currentPosition = 1;
     let previousScore = -1;
 
     playersArray.forEach((player, index) => {
-      // Manejar empates
       if (player.totalScore !== previousScore) {
         currentPosition = index + 1;
       }
       previousScore = player.totalScore;
+
+      const prizeWon = prizeDistribution.get(currentPosition) || 0;
 
       const accuracy = game.questions.length > 0 
         ? (player.correctAnswers / game.questions.length) * 100 
@@ -257,21 +286,64 @@ class GameManager {
         userId: player.userId,
         username: player.username,
         finalScore: player.totalScore,
-        prizeWon: 0, // Lo calcularemos en FASE 4 con transacciones
+        prizeWon,
         correctAnswers: player.correctAnswers,
         totalQuestions: game.questions.length,
         accuracy: Math.round(accuracy * 100) / 100,
       });
+
+      // Preparar datos para historial
+      gameHistoryData.push({
+        roomId,
+        gameSessionId: game.gameSessionId, // ⭐ USAR ID DE SESIÓN REAL
+        userId: player.userId,
+        finalPosition: currentPosition,
+        finalScore: player.totalScore,
+        prizeWon,
+      });
+
+      // Preparar premios a distribuir
+      if (prizeWon > 0) {
+        rewardsToDistribute.push({
+          userId: player.userId,
+          amount: prizeWon,
+          position: currentPosition,
+        });
+      }
     });
 
-    const resultsPayload: GameResultsPayload = {
-      roomId,
-      finalRanking,
-      totalPot: 0, // Lo calcularemos en FASE 4
-    };
+    try {
+      // ⭐ EJECUTAR TODO EN UNA TRANSACCIÓN
+      await this.processGameFinalization(
+        roomId,
+        rewardsToDistribute,
+        gameHistoryData,
+        playersArray
+      );
 
-    const io = getSocketIOInstance();
-    io.to(roomId).emit('game:finished', resultsPayload);
+      const resultsPayload: GameResultsPayload = {
+        roomId,
+        finalRanking,
+        totalPot: game.totalPot,
+      };
+
+      const io = getSocketIOInstance();
+      io.to(roomId).emit('game:finished', resultsPayload);
+
+      console.log(`✅ Game finalized successfully for room ${roomId}`);
+
+      // ⭐ NOTIFICAR AL SOCKET MANAGER PARA LIMPIAR LA SALA
+      socketIOManager.cleanupRoom(roomId);
+
+    } catch (error) {
+      console.error(`❌ Error finalizing game ${roomId}:`, error);
+      
+      const io = getSocketIOInstance();
+      io.to(roomId).emit('error', {
+        message: 'Error processing game results',
+        code: 'GAME_FINALIZATION_ERROR',
+      });
+    }
 
     // Limpiar juego después de 30 segundos
     setTimeout(() => {
@@ -281,7 +353,111 @@ class GameManager {
   }
 
   // ============================================
-  // GENERAR PREGUNTAS ALEATORIAS (SIMULADAS)
+  // CALCULAR DISTRIBUCIÓN DE PREMIOS
+  // ============================================
+  private calculatePrizeDistribution(
+    players: PlayerScore[],
+    totalPot: number
+  ): Map<number, number> {
+    const distribution = new Map<number, number>();
+
+    if (players.length === 0) return distribution;
+
+    // Distribución de premios:
+    // 1er lugar: 50%
+    // 2do lugar: 30%
+    // 3er lugar: 20%
+    // 4to y 5to: 0%
+
+    const percentages = [0.50, 0.30, 0.20];
+
+    // Agrupar jugadores por puntaje (para manejar empates)
+    const scoreGroups = new Map<number, number[]>();
+    players.forEach((player, index) => {
+      if (!scoreGroups.has(player.totalScore)) {
+        scoreGroups.set(player.totalScore, []);
+      }
+      scoreGroups.get(player.totalScore)!.push(index + 1);
+    });
+
+    // Calcular premios considerando empates
+    const sortedScores = Array.from(scoreGroups.keys()).sort((a, b) => b - a);
+
+    let positionIndex = 0;
+    sortedScores.forEach(score => {
+      const positions = scoreGroups.get(score)!;
+      
+      if (positionIndex < percentages.length) {
+        // Calcular cuánto porcentaje acumulado corresponde a estas posiciones
+        let accumulatedPercentage = 0;
+        for (let i = 0; i < positions.length && positionIndex + i < percentages.length; i++) {
+          accumulatedPercentage += percentages[positionIndex + i];
+        }
+
+        // Dividir equitativamente entre jugadores empatados
+        const prizePerPlayer = Math.floor((totalPot * accumulatedPercentage) / positions.length);
+
+        positions.forEach(position => {
+          distribution.set(position, prizePerPlayer);
+        });
+      }
+
+      positionIndex += positions.length;
+    });
+
+    return distribution;
+  }
+
+  // ============================================
+  // PROCESAR FINALIZACIÓN DEL JUEGO (ACTUALIZADO)
+  // ============================================
+  private async processGameFinalization(
+    roomId: string,
+    rewards: { userId: string; amount: number; position: number }[],
+    gameHistoryData: any[],
+    players: PlayerScore[]
+  ): Promise<void> {
+    // 1. Distribuir premios
+    if (rewards.length > 0) {
+      await this.transactionsService.distributeRewards(roomId, rewards);
+    }
+
+    // 2. Guardar historial de partidas
+    await this.gameHistoryService.createGameHistory(gameHistoryData);
+
+    // 3. Actualizar resultados en room_players
+    for (const historyEntry of gameHistoryData) {
+      await this.gameRoomsService.updatePlayerResults(
+        roomId,
+        historyEntry.userId,
+        historyEntry.finalPosition,
+        historyEntry.finalScore,
+        historyEntry.prizeWon
+      );
+    }
+
+    // 4. Actualizar estadísticas de usuarios
+    for (const player of players) {
+      const ranking = gameHistoryData.find(h => h.userId === player.userId);
+      const isWinner = ranking?.finalPosition === 1;
+      const isLoser = ranking?.finalPosition > 3;
+
+      await this.usersService.updateStats(player.userId, {
+        totalGames: 1,
+        victories: isWinner ? 1 : 0,
+        defeats: isLoser ? 1 : 0,
+        totalCorrectAnswers: player.correctAnswers,
+        totalQuestions: gameHistoryData[0]?.totalQuestions || 10,
+        totalCoinsWon: ranking?.prizeWon || 0,
+        totalCoinsLost: ranking?.prizeWon > 0 ? 0 : gameHistoryData[0]?.betAmount || 0,
+      });
+    }
+
+    console.log(`✅ Game finalization processed for room ${roomId}`);
+  }
+
+  // ============================================
+  // GENERAR PREGUNTAS ALEATORIAS
   // ============================================
   private generateRandomQuestions(count: number): QuestionData[] {
     const triviaBank = [
@@ -377,7 +553,6 @@ class GameManager {
       },
     ];
 
-    // Mezclar y tomar las primeras 'count' preguntas
     const shuffled = [...triviaBank].sort(() => Math.random() - 0.5);
     const selectedQuestions = shuffled.slice(0, Math.min(count, triviaBank.length));
 
@@ -399,12 +574,9 @@ class GameManager {
   // VERIFICAR OPCIÓN CORRECTA
   // ============================================
   private isCorrectOption(questionId: string, optionId: string): boolean {
-    // Buscar en todos los juegos activos
     for (const game of this.games.values()) {
       const question = game.questions.find(q => q.questionId === questionId);
       if (question) {
-        // La opción correcta siempre es la segunda (index 1) en nuestro banco simulado
-        // En producción, esto vendría de la base de datos
         return question.options[1]?.optionId === optionId;
       }
     }
