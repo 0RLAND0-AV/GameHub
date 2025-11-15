@@ -3,54 +3,27 @@ import { LoginDTO } from './schemas/login.schema';
 import { AuthResponse } from './interfaces/authentication.interface';
 import { PasswordHashUtility } from '../../shared/utils/password-hash.utils';
 import { JWTUtility } from '../../shared/utils/jwt-token.utils';
-import { UserRole } from '../users/interfaces/user.interface';
-
-// ⭐ USUARIOS SIMULADOS EN MEMORIA (EN FASE 4 usaremos Prisma)
-const usersInMemory = new Map<string, any>();
+import { UsersService } from '../users/users.service';
 
 export class AuthenticationService {
+  private usersService: UsersService;
+
+  constructor() {
+    this.usersService = new UsersService();
+  }
 
   // ============================================
   // REGISTRO
   // ============================================
   async register(data: RegisterDTO): Promise<AuthResponse> {
-    // Verificar si el email ya existe
-    const existingUserByEmail = Array.from(usersInMemory.values()).find(
-      u => u.email === data.email
-    );
-    if (existingUserByEmail) {
-      throw new Error('Email already registered');
-    }
-
-    // Verificar si el username ya existe
-    const existingUserByUsername = Array.from(usersInMemory.values()).find(
-      u => u.username === data.username
-    );
-    if (existingUserByUsername) {
-      throw new Error('Username already taken');
-    }
-
-    // Hashear password
-    const hashedPassword = await PasswordHashUtility.hashPassword(data.password);
-
-    // Crear usuario
-    const userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    const newUser = {
-      id: userId,
+    // Crear usuario en la base de datos
+    const newUser = await this.usersService.createUser({
       username: data.username,
       email: data.email,
-      password: hashedPassword,
+      password: data.password,
       firstName: data.firstName,
       lastName: data.lastName,
-      coins: 100, // Monedas iniciales
-      role: UserRole.USER,
-      isActive: true,
-      isVerified: false,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    usersInMemory.set(userId, newUser);
+    });
 
     // Generar token
     const token = JWTUtility.generateToken({
@@ -79,15 +52,17 @@ export class AuthenticationService {
   // ============================================
   async login(data: LoginDTO): Promise<AuthResponse> {
     // Buscar usuario por email
-    const user = Array.from(usersInMemory.values()).find(
-      u => u.email === data.email
-    );
+    const user = await this.usersService.findByEmail(data.email);
 
     if (!user) {
       throw new Error('Invalid credentials');
     }
 
     // Verificar password
+    if (!user.password) {
+      throw new Error('Invalid credentials');
+    }
+
     const isPasswordValid = await PasswordHashUtility.comparePassword(
       data.password,
       user.password
@@ -103,7 +78,7 @@ export class AuthenticationService {
     }
 
     // Actualizar último login
-    user.lastLoginAt = new Date();
+    await this.usersService.updateLastLogin(user.id);
 
     // Generar token
     const token = JWTUtility.generateToken({
@@ -128,14 +103,16 @@ export class AuthenticationService {
   }
 
   // ============================================
-  // OBTENER PERFIL (verificar token)
+  // OBTENER PERFIL
   // ============================================
   async getProfile(userId: string): Promise<any> {
-    const user = usersInMemory.get(userId);
+    const user = await this.usersService.findById(userId);
 
     if (!user) {
       throw new Error('User not found');
     }
+
+    const stats = await this.usersService.getUserStats(userId);
 
     return {
       userId: user.id,
@@ -148,45 +125,18 @@ export class AuthenticationService {
       role: user.role,
       isVerified: user.isVerified,
       createdAt: user.createdAt,
+      stats: stats || null,
     };
   }
 
   // ============================================
-  // OBTENER USUARIO POR ID (para otros servicios)
+  // OBTENER USUARIO POR ID
   // ============================================
   async getUserById(userId: string): Promise<any> {
-    const user = usersInMemory.get(userId);
+    const user = await this.usersService.findById(userId);
     if (!user) {
       throw new Error('User not found');
     }
     return user;
-  }
-
-  // ============================================
-  // CREAR USUARIO ADMIN (helper para seeds)
-  // ============================================
-  async createAdminUser(data: {
-    username: string;
-    email: string;
-    password: string;
-  }): Promise<void> {
-    const hashedPassword = await PasswordHashUtility.hashPassword(data.password);
-    
-    const userId = `admin_${Date.now()}`;
-    const adminUser = {
-      id: userId,
-      username: data.username,
-      email: data.email,
-      password: hashedPassword,
-      coins: 10000,
-      role: UserRole.ADMIN,
-      isActive: true,
-      isVerified: true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    usersInMemory.set(userId, adminUser);
-    console.log(`✅ Admin user created: ${adminUser.username}`);
   }
 }
