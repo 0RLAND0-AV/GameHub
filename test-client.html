@@ -100,7 +100,7 @@
 <body>
   <div class="container">
     <h1>🎮 GameHub Test Client</h1>
-    
+    <button onclick="loginUser()" style="margin-bottom: 20px;">🔐 Login</button>
     <div id="status" class="status disconnected">
       🔴 Disconnected
     </div>
@@ -311,6 +311,101 @@
         userId
       });
     }
+
+  // ============================================
+  // EVENTOS DE GAMEPLAY
+  // ============================================
+  let currentQuestion = null;
+  let questionStartTime = null;
+
+  socket.on('question:displayed', (data) => {
+    currentQuestion = data;
+    questionStartTime = Date.now();
+    addLog(`📋 Question ${data.questionNumber}/${data.totalQuestions}: ${data.questionText}`, 'info');
+    addLog(`⏱️ Time limit: ${data.timeLimit}s`, 'info');
+    
+    // Simular respuesta automática aleatoria después de 2-8 segundos
+    const randomDelay = Math.random() * 6000 + 2000;
+    setTimeout(() => {
+      if (currentQuestion && currentQuestion.questionId === data.questionId) {
+        answerRandomly();
+      }
+    }, randomDelay);
+  });
+
+  socket.on('question:results', (data) => {
+    addLog(`✅ Results for question received`, 'success');
+    data.playerResults.forEach(result => {
+      const icon = result.isCorrect ? '✅' : '❌';
+      addLog(
+        `${icon} ${result.username}: ${result.isCorrect ? 'Correct' : 'Wrong'} | +${result.pointsEarned} pts | Total: ${result.totalScore}`,
+        result.isCorrect ? 'success' : 'info'
+      );
+    });
+  });
+
+  socket.on('game:finished', (data) => {
+    addLog(`🏁 GAME FINISHED!`, 'success');
+    addLog(`📊 Final Ranking:`, 'info');
+    data.finalRanking.forEach(rank => {
+      addLog(
+        `${rank.position}. ${rank.username} - ${rank.finalScore} pts (${rank.correctAnswers}/${rank.totalQuestions} correct, ${rank.accuracy}% accuracy)`,
+        'success'
+      );
+    });
+  });
+
+  function answerRandomly() {
+    if (!currentQuestion || !currentRoomId) return;
+    
+    const randomOption = currentQuestion.options[Math.floor(Math.random() * currentQuestion.options.length)];
+    const responseTime = (Date.now() - questionStartTime) / 1000;
+    
+    const userId = document.getElementById('userId').value;
+    
+    socket.emit('player:answer', {
+      roomId: currentRoomId,
+      userId: userId,
+      questionId: currentQuestion.questionId,
+      selectedOptionId: randomOption.optionId,
+      responseTimeSeconds: responseTime
+    });
+    
+    addLog(`📤 Answered: ${randomOption.optionText} (${responseTime.toFixed(2)}s)`, 'info');
+    currentQuestion = null;
+  }
+    
+  let authToken = null;
+
+// Función para hacer login
+async function loginUser() {
+  const email = prompt('Enter email:', 'player1@test.com');
+  const password = prompt('Enter password:', 'password123');
+  
+  try {
+    const response = await fetch('http://localhost:3000/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    
+    const data = await response.json();
+    
+    if (data.ok) {
+      authToken = data.data.token;
+      document.getElementById('userId').value = data.data.user.userId;
+      document.getElementById('username').value = data.data.user.username;
+      addLog(`✅ Logged in as ${data.data.user.username}`, 'success');
+      alert(`Logged in! Coins: ${data.data.user.coins}`);
+    } else {
+      addLog(`❌ Login failed: ${data.message}`, 'error');
+    }
+  } catch (error) {
+    addLog(`❌ Login error: ${error.message}`, 'error');
+  }
+}  
   </script>
+
+
 </body>
 </html>

@@ -4,7 +4,27 @@ import path from 'path';
 const ENV_PATH = path.join(__dirname, '/../../.env');
 dotenv.config({ path: ENV_PATH });
 
-export const ENV = {
+// 1. Define la interfaz/tipo para la configuración
+interface EnvConfig {
+    PORT: string | number;
+    NODE_ENV: string;
+    DATABASE_URL: string;
+    
+    MIN_BET: number;
+    MAX_BET: number;
+    COUNTDOWN_SECONDS: number;
+    QUESTIONS_PER_GAME: number;
+    TIME_PER_QUESTION: number;
+    BASE_POINTS: number;
+    SPEED_BONUS_MULTIPLIER: number;
+    JWT_SECRET: string;
+    JWT_EXPIRES_IN: string;
+    SALT_ROUNDS: number;
+    INITIAL_COINS: number;
+    
+}
+
+export const ENV:EnvConfig = {
   // Server
   PORT: process.env.PORT || 3000,
   NODE_ENV: process.env.NODE_ENV || 'development',

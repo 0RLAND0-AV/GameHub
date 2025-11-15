@@ -6,6 +6,7 @@ import {
   CreateRoomPayload,
   JoinRoomPayload,
 } from '../shared/types/socket-events.type';
+import gameManager from './game-manager'; 
 
 class SocketIOManager {
   private rooms: Map<string, RoomData> = new Map();
@@ -252,8 +253,16 @@ class SocketIOManager {
 
     console.log(`🎯 Game started in room ${roomId}`);
     
-    // Aquí conectaremos con la lógica del juego (FASE 2)
+    // ⭐ INICIAR LÓGICA DEL JUEGO
+    gameManager.startGame(
+      roomId, 
+      room.players.map(p => ({
+        userId: p.userId,
+        username: p.username,
+      }))
+    );
   }
+
 
   // ============================================
   // ELIMINAR SALA
