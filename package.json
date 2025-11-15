@@ -8,7 +8,18 @@
     "dev": "nodemon --watch src/**/*.ts --exec ts-node src/main.ts",
     "dev1": "nodemon --exec ts-node src/main.ts",
     "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:migrate:deploy": "prisma migrate deploy",
+    "prisma:migrate:reset": "prisma migrate reset",
+    "prisma:studio": "prisma studio",
+    "prisma:seed": "ts-node prisma/seeders/seed.ts",
+    "prisma:push": "prisma db push",
+    
+    "db:reset": "npm run prisma:migrate:reset && npm run prisma:seed",
+    "db:setup": "npm run prisma:generate && npm run prisma:migrate && npm run prisma:seed"
   },
   "keywords": [],
   "author": "Orlando AV",
@@ -21,7 +32,8 @@
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
-    "socket.io": "^4.8.1"
+    "socket.io": "^4.8.1",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",

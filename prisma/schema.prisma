@@ -1,0 +1,346 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum AuthProvider {
+  LOCAL
+  GOOGLE
+  FACEBOOK
+}
+
+enum RoomStatus {
+  WAITING
+  COUNTDOWN
+  IN_PROGRESS
+  FINISHED
+  CANCELLED
+}
+
+enum GameSessionStatus {
+  IN_PROGRESS
+  FINISHED
+  CANCELLED
+}
+
+enum TransactionType {
+  BET
+  WIN
+  REFUND
+  BONUS
+  PURCHASE
+}
+
+// ============================================
+// USUARIOS Y AUTENTICACIÓN
+// ============================================
+
+model User {
+  id            String       @id @default(uuid())
+  username      String       @unique
+  email         String       @unique
+  password      String?      // Nullable para auth externa (Google, etc)
+  
+  // Campos de perfil
+  firstName     String?      @map("first_name")
+  lastName      String?      @map("last_name")
+  avatar        String?      // URL o path
+  coins         Int          @default(100)
+  
+  // Autenticación y roles
+  role          UserRole     @default(USER)
+  authProvider  AuthProvider @default(LOCAL) @map("auth_provider")
+  googleId      String?      @unique @map("google_id")
+  facebookId    String?      @unique @map("facebook_id")
+  
+  // Estado de cuenta
+  isActive      Boolean      @default(true) @map("is_active")
+  isVerified    Boolean      @default(false) @map("is_verified")
+  lastLoginAt   DateTime?    @map("last_login_at")
+  
+  // Timestamps
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
+
+  // Relaciones
+  stats         UserStats?
+  createdRooms  Room[]           @relation("RoomCreator")
+  roomPlayers   RoomPlayer[]
+  transactions  Transaction[]
+  gameHistory   GameHistory[]
+
+  @@map("users")
+}
+
+model UserStats {
+  id                   String   @id @default(uuid())
+  userId               String   @unique @map("user_id")
+  totalGames           Int      @default(0) @map("total_games")
+  victories            Int      @default(0)
+  defeats              Int      @default(0)
+  totalCorrectAnswers  Int      @default(0) @map("total_correct_answers")
+  totalQuestions       Int      @default(0) @map("total_questions")
+  accuracyPercentage   Float    @default(0) @map("accuracy_percentage")
+  totalCoinsWon        Int      @default(0) @map("total_coins_won")
+  totalCoinsLost       Int      @default(0) @map("total_coins_lost")
+  highestStreak        Int      @default(0) @map("highest_streak")
+  currentStreak        Int      @default(0) @map("current_streak")
+  
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_stats")
+}
+
+// ============================================
+// TIPOS DE JUEGOS
+// ============================================
+
+model GameType {
+  id                String  @id @default(uuid())
+  name              String  @unique
+  slug              String  @unique
+  description       String?
+  minPlayers        Int     @map("min_players")
+  maxPlayers        Int     @map("max_players")
+  questionsPerGame  Int     @map("questions_per_game")
+  timePerQuestion   Int     @map("time_per_question") // segundos
+  
+  // Configuración adicional
+  isActive          Boolean @default(true) @map("is_active")
+  thumbnailUrl      String? @map("thumbnail_url")
+  
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  // Relaciones
+  rooms Room[]
+
+  @@map("game_types")
+}
+
+// ============================================
+// SALAS Y JUGADORES
+// ============================================
+
+model Room {
+  id                  String     @id @default(uuid())
+  gameTypeId          String     @map("game_type_id")
+  creatorId           String     @map("creator_id")
+  
+  // Configuración de sala
+  betAmount           Int        @map("bet_amount")
+  status              RoomStatus @default(WAITING)
+  minPlayers          Int        @map("min_players")
+  maxPlayers          Int        @map("max_players")
+  totalPot            Int        @default(0) @map("total_pot")
+  
+  // Control de tiempo
+  countdownStartedAt  DateTime?  @map("countdown_started_at")
+  gameStartedAt       DateTime?  @map("game_started_at")
+  gameFinishedAt      DateTime?  @map("game_finished_at")
+  
+  // Metadata
+  isPrivate           Boolean    @default(false) @map("is_private")
+  roomCode            String?    @unique @map("room_code") // Para salas privadas
+  
+  createdAt           DateTime   @default(now()) @map("created_at")
+
+  // Relaciones
+  gameType      GameType       @relation(fields: [gameTypeId], references: [id])
+  creator       User           @relation("RoomCreator", fields: [creatorId], references: [id])
+  players       RoomPlayer[]
+  gameSessions  GameSession[]
+  transactions  Transaction[]
+  gameHistory   GameHistory[]
+
+  @@map("rooms")
+}
+
+model RoomPlayer {
+  id            String   @id @default(uuid())
+  roomId        String   @map("room_id")
+  userId        String   @map("user_id")
+  
+  // Estado del jugador
+  joinedAt      DateTime @default(now()) @map("joined_at")
+  isConnected   Boolean  @default(true) @map("is_connected")
+  socketId      String?  @map("socket_id") // Para gestión de Socket.IO
+  
+  // Resultados finales
+  finalPosition Int?     @map("final_position")
+  finalScore    Int?     @map("final_score")
+  prizeWon      Int?     @map("prize_won")
+
+  // Relaciones
+  room          Room           @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user          User           @relation(fields: [userId], references: [id])
+  playerAnswers PlayerAnswer[]
+
+  @@unique([roomId, userId])
+  @@map("room_players")
+}
+
+// ============================================
+// PREGUNTAS Y OPCIONES
+// ============================================
+
+model Question {
+  id           String   @id @default(uuid())
+  questionText String   @map("question_text") @db.Text
+  category     String
+  difficulty   String   @default("medium")
+  
+  // Metadata
+  isActive     Boolean  @default(true) @map("is_active")
+  timesUsed    Int      @default(0) @map("times_used")
+  
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  options              QuestionOption[]
+  gameSessionQuestions GameSessionQuestion[]
+  playerAnswers        PlayerAnswer[]
+
+  @@index([category])
+  @@index([difficulty])
+  @@map("questions")
+}
+
+model QuestionOption {
+  id          String  @id @default(uuid())
+  questionId  String  @map("question_id")
+  optionText  String  @map("option_text") @db.Text
+  isCorrect   Boolean @map("is_correct")
+  optionOrder Int     @map("option_order")
+
+  // Relaciones
+  question      Question       @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  playerAnswers PlayerAnswer[]
+
+  @@map("question_options")
+}
+
+// ============================================
+// SESIONES DE JUEGO
+// ============================================
+
+model GameSession {
+  id         String            @id @default(uuid())
+  roomId     String            @map("room_id")
+  startedAt  DateTime          @default(now()) @map("started_at")
+  finishedAt DateTime?         @map("finished_at")
+  status     GameSessionStatus @default(IN_PROGRESS)
+
+  // Relaciones
+  room                 Room                  @relation(fields: [roomId], references: [id])
+  gameSessionQuestions GameSessionQuestion[]
+  playerAnswers        PlayerAnswer[]
+  gameHistory          GameHistory[]
+
+  @@map("game_sessions")
+}
+
+model GameSessionQuestion {
+  id            String    @id @default(uuid())
+  gameSessionId String    @map("game_session_id")
+  questionId    String    @map("question_id")
+  questionOrder Int       @map("question_order")
+  displayedAt   DateTime? @map("displayed_at")
+
+  // Relaciones
+  gameSession GameSession @relation(fields: [gameSessionId], references: [id], onDelete: Cascade)
+  question    Question    @relation(fields: [questionId], references: [id])
+
+  @@unique([gameSessionId, questionOrder])
+  @@map("game_session_questions")
+}
+
+// ============================================
+// RESPUESTAS DE JUGADORES
+// ============================================
+
+model PlayerAnswer {
+  id                  String   @id @default(uuid())
+  gameSessionId       String   @map("game_session_id")
+  roomPlayerId        String   @map("room_player_id")
+  questionId          String   @map("question_id")
+  selectedOptionId    String?  @map("selected_option_id")
+  
+  // Resultados
+  isCorrect           Boolean  @map("is_correct")
+  responseTimeSeconds Float    @map("response_time_seconds")
+  pointsEarned        Int      @map("points_earned")
+  
+  answeredAt          DateTime @default(now()) @map("answered_at")
+
+  // Relaciones
+  gameSession    GameSession     @relation(fields: [gameSessionId], references: [id])
+  roomPlayer     RoomPlayer      @relation(fields: [roomPlayerId], references: [id])
+  question       Question        @relation(fields: [questionId], references: [id])
+  selectedOption QuestionOption? @relation(fields: [selectedOptionId], references: [id])
+
+  @@map("player_answers")
+}
+
+// ============================================
+// TRANSACCIONES Y HISTORIAL
+// ============================================
+
+model Transaction {
+  id            String          @id @default(uuid())
+  userId        String          @map("user_id")
+  roomId        String?         @map("room_id")
+  type          TransactionType
+  amount        Int
+  balanceBefore Int             @map("balance_before")
+  balanceAfter  Int             @map("balance_after")
+  description   String?         // Descripción adicional
+  
+  createdAt     DateTime        @default(now()) @map("created_at")
+
+  // Relaciones
+  user User  @relation(fields: [userId], references: [id])
+  room Room? @relation(fields: [roomId], references: [id])
+
+  @@index([userId])
+  @@index([type])
+  @@map("transactions")
+}
+
+model GameHistory {
+  id            String   @id @default(uuid())
+  roomId        String   @map("room_id")
+  gameSessionId String   @map("game_session_id")
+  userId        String   @map("user_id")
+  
+  // Resultados
+  finalPosition Int      @map("final_position")
+  finalScore    Int      @map("final_score")
+  prizeWon      Int      @map("prize_won")
+  
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  // Relaciones
+  room        Room        @relation(fields: [roomId], references: [id])
+  gameSession GameSession @relation(fields: [gameSessionId], references: [id])
+  user        User        @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("game_history")
+}
