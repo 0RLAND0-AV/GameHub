@@ -1,6 +1,6 @@
 import {Request, Response, Router} from 'express'
 
-import helthRoter from '../modules/helthCheck/helthCheck.routes'
+import helthRoter from '../modules/healthCheck/healthCheck.routes'
 // import UserRouter from '../modules/users/users.routes'
 // import AuthRouter from '../modules/auth/auth.routes'
 // import { validateSesionUser } from '../middleware/userSesion.middleware'
