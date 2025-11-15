@@ -27,9 +27,15 @@ npm install
 
 3. **Configurar variables de entorno**
 
-Crear un archivo .env y copiar el contenido de .env.example
+Crear un archivo .env y copiar el contenido de .env.example reemplzando por tus valores preferidos.
 
-4. **Iniciar el servidor**
+4. **Levantar la BD y realizar migraciones**
+```
+docker compose up -d
+npm run db:setup   
+```
+
+5. **Iniciar el servidor**
 ```
 npm run dev
 ```
