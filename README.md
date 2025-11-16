@@ -101,7 +101,7 @@
 
 ### **Estructura del Proyecto**
 ```
-GameHub-Backend/
+GameHub/
 ├── prisma/
 │   ├── schema.prisma          # Modelos de base de datos
 │   ├── migrations/            # Migraciones SQL
@@ -127,6 +127,7 @@ GameHub-Backend/
 │   │   ├── users/             # Gestión de usuarios (ADMIN only)
 │   │   ├── game-rooms/        # Gestión de salas
 │   │   ├── player-transactions/ # Apuestas y premios
+│   │   ├── game-sessions/     # Registro y control del ciclo de vida de cada partida en BD
 │   │   ├── game-history/      # Historial de partidas
 │   │   └── health-check/      # Health check endpoint
 │   │
@@ -137,7 +138,7 @@ GameHub-Backend/
 │   │
 │   ├── shared/                # Código compartido
 │   │   ├── types/             # Tipos e interfaces
-│   │   └── utilities/         # Utilidades (JWT, Hash, etc)
+│   │   └── utils/         # Utilidades (JWT, Hash, etc)
 │   │
 │   └── main.ts                # Punto de entrada
 │
@@ -374,7 +375,9 @@ router.get('/profile',
 ```http
 POST /api/auth/register      # Registro
 POST /api/auth/login         # Login
-GET  /api/health-check       # Health check
+GET  /api/health      # Health check
+GET api/auth/users
+GET api/auth/verify
 ```
 
 #### **USER (Autenticado)**
@@ -382,16 +385,15 @@ GET  /api/health-check       # Health check
 GET    /api/auth/profile     # Ver mi perfil
 GET    /api/game-history     # Mi historial
 GET    /api/transactions     # Mis transacciones
+GET     /api/transactions/my-balance
+GET     /api/transactions/my-transactions?page=1&limit=10
+GET     /api/transactions/check-funds?amount=100
+GET     /api/transactions/my-summary
 ```
 
 #### **ADMIN (Solo administradores)**
 ```http
 GET    /api/users            # Listar todos los usuarios
-GET    /api/users/:id        # Ver usuario específico
-PUT    /api/users/:id        # Actualizar usuario
-DELETE /api/users/:id        # Eliminar usuario
-POST   /api/users/:id/coins  # Modificar coins de usuario
-GET    /api/admin/stats      # Estadísticas globales
 ```
 
 
