@@ -1,7 +1,8 @@
 # 🎮 GameHub - Plataforma de Juegos Competitivos Multijugador
 
 **GameHub** es una plataforma de juegos competitivos en tiempo real donde los usuarios apuestan monedas virtuales para competir entre sí. El juego inicial es **Trivia Showdown**: de 2 a 5 jugadores responden 10 preguntas de cultura general en 15 segundos cada una, compitiendo por el pozo acumulado.
-
+DEMO: https://drive.google.com/file/d/1PnwXuQFLL8GrW04FlLBcXcC_VHcXyP8O/view?usp=drive_link
+ENTRAR CON abdielorellana3@gmail.com
 ---
 
 ## 📋 Tabla de Contenidos

@@ -1,5 +1,4 @@
-﻿// src\modules\authentication\authentication.service.ts
-import { RegisterDTO } from './schemas/register.schema';
+﻿import { RegisterDTO } from './schemas/register.schema';
 import { LoginDTO } from './schemas/login.schema';
 import { AuthResponse } from './interfaces/authentication.interface';
 import { PasswordHashUtility } from '../../shared/utils/password-hash.utils';
@@ -16,7 +15,7 @@ export class AuthenticationService {
   // ============================================
   // REGISTRO
   // ============================================
-  async register(data: RegisterDTO): Promise<AuthResponse> {
+  async register(data: RegisterDTO): Promise<any> {
     // Crear usuario en la base de datos
     const newUser = await this.usersService.createUser({
       username: data.username,
@@ -26,18 +25,9 @@ export class AuthenticationService {
       lastName: data.lastName,
     });
 
-    // Generar token
-    const token = JWTUtility.generateToken({
-      userId: newUser.id,
-      username: newUser.username,
-      email: newUser.email,
-      role: newUser.role,
-    });
-
-    console.log(` User registered: ${newUser.username} (${newUser.email})`);
+    console.log(`User registered: ${newUser.username} (${newUser.email})`);
 
     return {
-      token,
       user: {
         userId: newUser.id,
         username: newUser.username,
@@ -47,6 +37,7 @@ export class AuthenticationService {
       },
     };
   }
+
 
   // ============================================
   // LOGIN

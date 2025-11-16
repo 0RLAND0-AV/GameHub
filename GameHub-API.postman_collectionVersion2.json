@@ -1,0 +1,130 @@
+{
+	"info": {
+		"_postman_id": "7b823dd3-495f-430e-b385-0c48877d3d91",
+		"name": "GameHub-API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "46899595",
+		"_collection_link": "https://orlandoaltamiranovargas.postman.co/workspace/2a0113e0-d2d1-4dfa-83d6-6526ed1b9808/collection/46899595-7b823dd3-495f-430e-b385-0c48877d3d91?action=share&source=collection_link&creator=46899595"
+	},
+	"item": [
+		{
+			"name": "Auth & Users",
+			"item": [
+				{
+					"name": "Register-Correcto-Test",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "Login-Admin-Seeder",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "Login-user",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "Users-Admin token",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Games & Rooms",
+			"item": [
+				{
+					"name": "My-History token",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "My-Stats token",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "Global Stats",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Profile",
+			"item": [
+				{
+					"name": "Profile-Info token",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "Verify-JWT token",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "Balance-Coins token",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "Historial-Transacciones token",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "Resumen-Transacciones token",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "Verificar-Fondos token",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
