@@ -121,7 +121,7 @@ services:
       
       # CORS Origin - ACTUALIZAR cuando tengas tu frontend desplegado
       - key: CORS_ORIGIN
-        value: https://tu-frontend.vercel.app,http://localhost:5173
+        value: https://taupe-cat-03eafc.netlify.app,http://localhost:5173
 
 # ⚠️ NO CREAR BASE DE DATOS EN RENDER
 # Usarás tu BD existente de Koyeb
