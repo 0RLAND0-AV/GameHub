@@ -15,7 +15,7 @@
     "prisma:migrate:deploy": "prisma migrate deploy",
     "prisma:migrate:reset": "prisma migrate reset",
     "prisma:studio": "prisma studio",
-    "prisma:seed": "ts-node prisma/seeders/seed.ts",
+    "prisma:seed": "node dist/prisma/seeders/seed.js",
     "prisma:push": "prisma db push",
     
     "db:reset": "npm run prisma:migrate:reset && npm run prisma:seed",
