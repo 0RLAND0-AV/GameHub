@@ -1,3 +1,4 @@
+// src\modules\users\interfaces\user.interface.ts
 export enum UserRole {
   USER = 'USER',
   ADMIN = 'ADMIN',

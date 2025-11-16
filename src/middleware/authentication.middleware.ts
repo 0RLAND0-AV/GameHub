@@ -1,3 +1,4 @@
+// src\middleware\authentication.middleware.ts
 import { Request, Response, NextFunction } from 'express';
 import { JWTUtility } from '../shared/utils/jwt-token.utils';
 import { UserSession } from '../modules/authentication/interfaces/authentication.interface';

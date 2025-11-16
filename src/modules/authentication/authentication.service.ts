@@ -1,4 +1,5 @@
-﻿import { RegisterDTO } from './schemas/register.schema';
+﻿// src\modules\authentication\authentication.service.ts
+import { RegisterDTO } from './schemas/register.schema';
 import { LoginDTO } from './schemas/login.schema';
 import { AuthResponse } from './interfaces/authentication.interface';
 import { PasswordHashUtility } from '../../shared/utils/password-hash.utils';

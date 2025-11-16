@@ -117,6 +117,7 @@ GameHub/
 │   │   └── socketio-server.config.ts    # Socket.IO setup
 │   │
 │   ├── middleware/            # Middlewares globales
+│   │   ├── admin.middleware.ts             # Validar rolAdmin ✅
 │   │   ├── authentication.middleware.ts      # Validar JWT ✅
 │   │   ├── authorization-role.middleware.ts  # Verificar roles ✅
 │   │   ├── request-validation.middleware.ts  # Validar con Zod
@@ -306,7 +307,7 @@ Cuando se alcanzan 2 jugadores:
 
 ---
 
-## 🔐 Seguridad y Roles
+## 🔐 Endpoints, roles y seguridad
 
 ### **Sistema de Roles**
 
@@ -317,47 +318,6 @@ GameHub implementa dos roles:
 | **USER** | Usuario estándar | Jugar, ver su perfil, crear salas |
 | **ADMIN** | Administrador | Todo lo de USER + gestionar usuarios |
 
-### **Protección de Endpoints**
-
-#### **1. Middleware de Autenticación**
-
-**Archivo**: `src/middleware/authentication.middleware.ts`
-```typescript
-export const authenticateToken = (req, res, next) => {
-  // 1. Extraer token del header Authorization
-  const token = extractTokenFromHeader(req.headers['authorization']);
-  
-  // 2. Verificar y decodificar token
-  const decoded = jwt.verify(token, JWT_SECRET);
-  
-  // 3. Adjuntar usuario a request
-  req.user = {
-    userId: decoded.userId,
-    username: decoded.username,
-    email: decoded.email,
-    role: decoded.role  // 'USER' o 'ADMIN'
-  };
-  
-  next();
-};
-```
-
-#### **2. Middleware de Autorización por Roles**
-
-**Archivo**: `src/middleware/authorization-role.middleware.ts`
-```typescript
-export const authorizeRole = (...allowedRoles: UserRole[]) => {
-  return (req, res, next) => {
-    if (!allowedRoles.includes(req.user.role)) {
-      return res.status(403).json({ 
-        ok: false,
-        message: 'Forbidden: Insufficient permissions' 
-      });
-    }
-    next();
-  };
-};
-```
 
 ### **Endpoints por Rol**
 
@@ -366,24 +326,27 @@ export const authorizeRole = (...allowedRoles: UserRole[]) => {
 POST /api/auth/register      # Registro
 POST /api/auth/login         # Login
 GET  /api/health      # Health check
-GET  /api/auth/users
-GET  /api/auth/verify
+GET /api/game-history/global-ranking?limit=10 #Obtenemos ranking global
 ```
 
 #### **USER (Autenticado)**
 ```http
 GET    /api/auth/profile     # Ver mi perfil
-GET    /api/game-history     # Mi historial
-GET    /api/transactions     # Mis transacciones
-GET     /api/transactions/my-balance
-GET     /api/transactions/my-transactions?page=1&limit=10
-GET     /api/transactions/check-funds?amount=100
-GET     /api/transactions/my-summary
+GET    /api/auth/verify        # Verificar token valido
+GET     /api/transactions/my-summary     # Resumen de mis transacciones 
+GET     /api/transactions/my-balance     #Get current balance 
+GET     /api/transactions/my-transactions?page=1&limit=10     #Get transaction history
+GET     /api/transactions/check-funds?amount=100    #Check if has enough funds
+GET    /api/game-history/my-history     # Mi historial
+GET    /api/game-history/my-stats     #Get game stats
 ```
 
 #### **ADMIN (Solo administradores)**
 ```http
 GET    /api/users            # Listar todos los usuarios
+users?sort=desc
+users?page=2&limit=5&sort=asc
+users?page=1&limit=2
 ```
 
 

@@ -1,4 +1,5 @@
-﻿import prisma from '../../config/prisma-client.config';
+﻿// D:\1ORLANDO\2025\CURSOS SCESI\PROYECTO-CURSO-BACKEND\GameHub\src\modules\users\users.service.ts
+import prisma from '../../config/prisma-client.config';
 import { UserRole, AuthProvider, CreateUserData, IUser } from './interfaces/user.interface';
 import { PasswordHashUtility } from '../../shared/utils/password-hash.utils';
 import { ENV } from '../../config/environment.config';
@@ -183,14 +184,14 @@ export class UsersService {
   // ============================================
   // LISTAR USUARIOS (para admin)
   // ============================================
-  async listUsers(page: number = 1, limit: number = 10) {
+  async listUsers(page: number = 1, limit: number = 10, sortOrder: 'asc' | 'desc' = 'asc') {
     const skip = (page - 1) * limit;
 
     const [users, total] = await Promise.all([
       prisma.user.findMany({
         skip,
         take: limit,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: sortOrder }, 
         select: {
           id: true,
           username: true,

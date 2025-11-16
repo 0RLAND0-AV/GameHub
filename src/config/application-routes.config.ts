@@ -1,8 +1,10 @@
-﻿import { Router } from 'express';
+﻿// src/config/application-routes.config.ts
+import { Router } from 'express';
 import healthCheckRouter from '../modules/healthCheck/healthCheck.routes';
 import authRouter from '../modules/authentication/authentication.routes';
 import transactionsRouter from '../modules/player-transactions/player-transactions.routes';
-import gameHistoryRouter from '../modules/game-history/game-history.routes'; //  NUEVO
+import gameHistoryRouter from '../modules/game-history/game-history.routes';
+import usersRouter from '../modules/users/users.routes'; 
 
 const router = Router();
 
@@ -24,6 +26,7 @@ router.get('/', (req, res) => {
       'GET /api/game-history/my-history - Get game history (protected)',
       'GET /api/game-history/my-stats - Get game stats (protected)',
       'GET /api/game-history/global-ranking?limit=10 - Get global ranking (public)',
+      'GET /api/users - List all users (admin only)', // 🆕 NUEVO
       'Socket.IO available on same port',
     ],
   });
@@ -33,7 +36,8 @@ router.get('/', (req, res) => {
 router.use('/health', healthCheckRouter);
 router.use('/auth', authRouter);
 router.use('/transactions', transactionsRouter);
-router.use('/game-history', gameHistoryRouter); //  NUEVO
+router.use('/game-history', gameHistoryRouter);
+router.use('/users', usersRouter); // 🆕 NUEVO
 
 // Ruta 404
 router.use((req, res) => {

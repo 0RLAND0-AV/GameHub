@@ -1,4 +1,5 @@
-﻿import { Request, Response, NextFunction } from 'express';
+﻿// src\middleware\error-handler.middleware.ts
+import { Request, Response, NextFunction } from 'express';
 
 export interface AppError extends Error {
   statusCode?: number;
