@@ -352,61 +352,84 @@ class GameManager {
     }, 30000);
   }
 
-  // ============================================
-  // CALCULAR DISTRIBUCIÓN DE PREMIOS
-  // ============================================
-  private calculatePrizeDistribution(
-    players: PlayerScore[],
-    totalPot: number
-  ): Map<number, number> {
-    const distribution = new Map<number, number>();
+// ============================================
+// CALCULAR DISTRIBUCIÓN DE PREMIOS (ACTUALIZADO)
+// ============================================
+private calculatePrizeDistribution(
+  players: PlayerScore[],
+  totalPot: number
+): Map<number, number> {
+  const distribution = new Map<number, number>();
 
-    if (players.length === 0) return distribution;
+  if (players.length === 0) return distribution;
 
-    // Distribución de premios:
-    // 1er lugar: 50%
-    // 2do lugar: 30%
-    // 3er lugar: 20%
-    // 4to y 5to: 0%
-
-    const percentages = [0.50, 0.30, 0.20];
-
-    // Agrupar jugadores por puntaje (para manejar empates)
-    const scoreGroups = new Map<number, number[]>();
-    players.forEach((player, index) => {
-      if (!scoreGroups.has(player.totalScore)) {
-        scoreGroups.set(player.totalScore, []);
-      }
-      scoreGroups.get(player.totalScore)!.push(index + 1);
-    });
-
-    // Calcular premios considerando empates
-    const sortedScores = Array.from(scoreGroups.keys()).sort((a, b) => b - a);
-
-    let positionIndex = 0;
-    sortedScores.forEach(score => {
-      const positions = scoreGroups.get(score)!;
-      
-      if (positionIndex < percentages.length) {
-        // Calcular cuánto porcentaje acumulado corresponde a estas posiciones
-        let accumulatedPercentage = 0;
-        for (let i = 0; i < positions.length && positionIndex + i < percentages.length; i++) {
-          accumulatedPercentage += percentages[positionIndex + i];
-        }
-
-        // Dividir equitativamente entre jugadores empatados
-        const prizePerPlayer = Math.floor((totalPot * accumulatedPercentage) / positions.length);
-
-        positions.forEach(position => {
-          distribution.set(position, prizePerPlayer);
-        });
-      }
-
-      positionIndex += positions.length;
-    });
-
-    return distribution;
+  // Obtener porcentajes según cantidad de jugadores
+  let percentages: number[] = [];
+  
+  switch (players.length) {
+    case 2:
+      percentages = [ENV.PRIZE_2P_FIRST, ENV.PRIZE_2P_SECOND];
+      break;
+    case 3:
+      percentages = [ENV.PRIZE_3P_FIRST, ENV.PRIZE_3P_SECOND, ENV.PRIZE_3P_THIRD];
+      break;
+    case 4:
+      percentages = [ENV.PRIZE_4P_FIRST, ENV.PRIZE_4P_SECOND, ENV.PRIZE_4P_THIRD, ENV.PRIZE_4P_FOURTH];
+      break;
+    case 5:
+      percentages = [ENV.PRIZE_5P_FIRST, ENV.PRIZE_5P_SECOND, ENV.PRIZE_5P_THIRD, ENV.PRIZE_5P_FOURTH, ENV.PRIZE_5P_FIFTH];
+      break;
+    default:
+      // Fallback para casos inesperados (usar distribución de 5 jugadores)
+      percentages = [ENV.PRIZE_5P_FIRST, ENV.PRIZE_5P_SECOND, ENV.PRIZE_5P_THIRD, ENV.PRIZE_5P_FOURTH, ENV.PRIZE_5P_FIFTH];
+      break;
   }
+
+  // Agrupar jugadores por puntaje (para manejar empates)
+  const scoreGroups = new Map<number, number[]>();
+  players.forEach((player, index) => {
+    if (!scoreGroups.has(player.totalScore)) {
+      scoreGroups.set(player.totalScore, []);
+    }
+    scoreGroups.get(player.totalScore)!.push(index + 1);
+  });
+
+  // Calcular premios considerando empates
+  const sortedScores = Array.from(scoreGroups.keys()).sort((a, b) => b - a);
+
+  let positionIndex = 0;
+  sortedScores.forEach(score => {
+    const positions = scoreGroups.get(score)!;
+    
+    if (positionIndex < percentages.length) {
+      // Calcular cuánto porcentaje acumulado corresponde a estas posiciones
+      let accumulatedPercentage = 0;
+      for (let i = 0; i < positions.length && positionIndex + i < percentages.length; i++) {
+        accumulatedPercentage += percentages[positionIndex + i];
+      }
+
+      // Dividir equitativamente entre jugadores empatados
+      const prizePerPlayer = Math.floor((totalPot * accumulatedPercentage) / positions.length);
+
+      positions.forEach(position => {
+        distribution.set(position, prizePerPlayer);
+      });
+      
+      console.log(` Position ${positions.join(',')} (${positions.length} players): ${prizePerPlayer} coins each (${(accumulatedPercentage * 100).toFixed(1)}% of pot)`);
+    } else {
+      // Posiciones fuera del premio
+      positions.forEach(position => {
+        distribution.set(position, 0);
+      });
+      
+      console.log(` Position ${positions.join(',')}: 0 coins (no prize)`);
+    }
+
+    positionIndex += positions.length;
+  });
+
+  return distribution;
+}
 
   // ============================================
   // PROCESAR FINALIZACIÓN DEL JUEGO (ACTUALIZADO)
