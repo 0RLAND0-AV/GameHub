@@ -1,4 +1,3 @@
-node_modules/
 databasePG/
 script.ps1
 script2.ps1
@@ -6,10 +5,6 @@ src/script1.ps1
 src/script2.ps1
 src/script3.ps1
 src/script4.ps1
-prisma/migrations
-.env
-.vscode/
-dist/
 
 
 # Dependencies
