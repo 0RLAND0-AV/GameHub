@@ -484,6 +484,7 @@ private calculatePrizeDistribution(
   // ============================================
   private generateRandomQuestions(count: number): QuestionData[] {
     const triviaBank = [
+      // PREGUNTAS ORIGINALES (15)
       {
         question: "¿Cuál es la capital de Francia?",
         options: ["Londres", "París", "Berlín", "Madrid"],
@@ -574,16 +575,204 @@ private calculatePrizeDistribution(
         correctIndex: 1,
         category: "Historia"
       },
+      // PREGUNTAS NUEVAS (35 adicionales)
+      {
+        question: "¿En qué año se cayó el Muro de Berlín?",
+        options: ["1987", "1989", "1991", "1993"],
+        correctIndex: 1,
+        category: "Historia"
+      },
+      {
+        question: "¿Cuál es la montaña más alta del mundo?",
+        options: ["K2", "Everest", "Kilimanjaro", "Denali"],
+        correctIndex: 1,
+        category: "Geografía"
+      },
+      {
+        question: "¿Quién escribió 'Don Quijote'?",
+        options: ["Lope de Vega", "Miguel de Cervantes", "Garcilaso de la Vega", "Quevedo"],
+        correctIndex: 1,
+        category: "Literatura"
+      },
+      {
+        question: "¿Cuál es la velocidad de la luz?",
+        options: ["300.000 km/s", "200.000 km/s", "100.000 km/s", "400.000 km/s"],
+        correctIndex: 0,
+        category: "Ciencia"
+      },
+      {
+        question: "¿En qué país nació Albert Einstein?",
+        options: ["Austria", "Suiza", "Alemania", "Polonia"],
+        correctIndex: 2,
+        category: "Historia"
+      },
+      {
+        question: "¿Cuál es el país más poblado del mundo?",
+        options: ["India", "China", "Indonesia", "Estados Unidos"],
+        correctIndex: 0,
+        category: "Geografía"
+      },
+      {
+        question: "¿Quién fue Napoleón Bonaparte?",
+        options: ["Un artista francés", "Un militar francés", "Un escritor francés", "Un científico francés"],
+        correctIndex: 1,
+        category: "Historia"
+      },
+      {
+        question: "¿Cuál es el desierto más grande del mundo?",
+        options: ["Sahara", "Gobi", "Kalahari", "Atacama"],
+        correctIndex: 0,
+        category: "Geografía"
+      },
+      {
+        question: "¿En qué año llegó Cristóbal Colón a América?",
+        options: ["1490", "1492", "1495", "1498"],
+        correctIndex: 1,
+        category: "Historia"
+      },
+      {
+        question: "¿Cuál es el animal más veloz del mundo?",
+        options: ["Halcón peregrino", "Guepardo", "Pez vela", "Gacela"],
+        correctIndex: 0,
+        category: "Naturaleza"
+      },
+      {
+        question: "¿Quién fue Vincent van Gogh?",
+        options: ["Un escultor neerlandés", "Un pintor neerlandés", "Un arquitecto neerlandés", "Un poeta neerlandés"],
+        correctIndex: 1,
+        category: "Arte"
+      },
+      {
+        question: "¿Cuántos huesos tiene el cuerpo humano adulto?",
+        options: ["186", "206", "226", "246"],
+        correctIndex: 1,
+        category: "Biología"
+      },
+      {
+        question: "¿Cuál es el país con más islas?",
+        options: ["Indonesia", "Filipinas", "Suecia", "Noruega"],
+        correctIndex: 0,
+        category: "Geografía"
+      },
+      {
+        question: "¿En qué año se fundó la ONU?",
+        options: ["1943", "1945", "1947", "1949"],
+        correctIndex: 1,
+        category: "Historia"
+      },
+      {
+        question: "¿Cuál es el símbolo químico del oro?",
+        options: ["Au", "Ag", "Fe", "Cu"],
+        correctIndex: 0,
+        category: "Química"
+      },
+      {
+        question: "¿Quién escribió 'Romeo y Julieta'?",
+        options: ["Christopher Marlowe", "William Shakespeare", "Ben Jonson", "John Webster"],
+        correctIndex: 1,
+        category: "Literatura"
+      },
+      {
+        question: "¿Cuál es la capital de Japón?",
+        options: ["Osaka", "Tokio", "Kioto", "Yokohama"],
+        correctIndex: 1,
+        category: "Geografía"
+      },
+      {
+        question: "¿En qué continente se encuentra Marruecos?",
+        options: ["Asia", "Europa", "África", "Oceanía"],
+        correctIndex: 2,
+        category: "Geografía"
+      },
+      {
+        question: "¿Cuál es el órgano más grande del cuerpo humano?",
+        options: ["Corazón", "Hígado", "Piel", "Cerebro"],
+        correctIndex: 2,
+        category: "Biología"
+      },
+      {
+        question: "¿Quién fue el primer hombre en pisar la Luna?",
+        options: ["Buzz Aldrin", "Neil Armstrong", "Yuri Gagarin", "John Glenn"],
+        correctIndex: 1,
+        category: "Historia"
+      },
+      {
+        question: "¿Cuál es el gas más abundante en la atmósfera terrestre?",
+        options: ["Oxígeno", "Nitrógeno", "Argón", "Dióxido de carbono"],
+        correctIndex: 1,
+        category: "Ciencia"
+      },
+      {
+        question: "¿En qué año comenzó la Primera Guerra Mundial?",
+        options: ["1912", "1914", "1916", "1918"],
+        correctIndex: 1,
+        category: "Historia"
+      },
+      {
+        question: "¿Cuál es la capital de Brasil?",
+        options: ["Rio de Janeiro", "San Pablo", "Brasilia", "Salvador"],
+        correctIndex: 2,
+        category: "Geografía"
+      },
+      {
+        question: "¿Cuántas cuerdas tiene una guitarra clásica?",
+        options: ["5", "6", "7", "8"],
+        correctIndex: 1,
+        category: "Música"
+      },
+      {
+        question: "¿Quién fue Marie Curie?",
+        options: ["Una bióloga francesa", "Una física polaca", "Una química alemana", "Una astrónoma sueca"],
+        correctIndex: 1,
+        category: "Ciencia"
+      },
+      {
+        question: "¿Cuál es el país más grande de América del Sur?",
+        options: ["Argentina", "Perú", "Brasil", "Colombia"],
+        correctIndex: 2,
+        category: "Geografía"
+      },
+      {
+        question: "¿En qué año se inventó la imprenta?",
+        options: ["1440", "1445", "1450", "1455"],
+        correctIndex: 0,
+        category: "Historia"
+      },
+      {
+        question: "¿Cuál es el idioma oficial de Brasil?",
+        options: ["Español", "Portugués", "Inglés", "Francés"],
+        correctIndex: 1,
+        category: "Cultura"
+      },
+      {
+        question: "¿Cuántos lados tiene un octágono?",
+        options: ["6", "7", "8", "9"],
+        correctIndex: 2,
+        category: "Matemáticas"
+      },
+      {
+        question: "¿Quién fue Cleopatra?",
+        options: ["Una reina romana", "Una reina griega", "Una reina egipcia", "Una reina persa"],
+        correctIndex: 2,
+        category: "Historia"
+      },
+      {
+        question: "¿Cuál es la moneda de México?",
+        options: ["Bolívar", "Peso", "Real", "Córdoba"],
+        correctIndex: 1,
+        category: "Economía"
+      },
     ];
 
-    const shuffled = [...triviaBank].sort(() => Math.random() - 0.5);
+    // Usar Fisher-Yates shuffle para una mejor aleatorización
+    const shuffled = this.shuffleArray([...triviaBank]);
     const selectedQuestions = shuffled.slice(0, Math.min(count, triviaBank.length));
 
     return selectedQuestions.map((q, index) => ({
-      questionId: `q_${Date.now()}_${index}`,
+      questionId: `q_${Date.now()}_${index}_${Math.random()}`,
       questionText: q.question,
       options: q.options.map((optText, optIndex) => ({
-        optionId: `opt_${Date.now()}_${index}_${optIndex}`,
+        optionId: `opt_${Date.now()}_${index}_${optIndex}_${Math.random()}`,
         optionText: optText,
         optionOrder: optIndex + 1,
       })),
@@ -591,6 +780,17 @@ private calculatePrizeDistribution(
       questionNumber: index + 1,
       totalQuestions: count,
     }));
+  }
+
+  // ============================================
+  // SHUFFLE ARRAY (Fisher-Yates Algorithm)
+  // ============================================
+  private shuffleArray<T>(array: T[]): T[] {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
   }
 
   // ============================================
