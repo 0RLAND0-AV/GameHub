@@ -1,14 +1,15 @@
+// src/config/environment.config.ts
 import dotenv from 'dotenv';
 import path from 'path';
 
 const ENV_PATH = path.join(__dirname, '/../../.env');
 dotenv.config({ path: ENV_PATH });
 
-// 1. Define la interfaz/tipo para la configuración
 interface EnvConfig {
     PORT: string | number;
     NODE_ENV: string;
     DATABASE_URL: string;
+    CORS_ORIGIN?: string; // 👈 NUEVO
     
     MIN_BET: number;
     MAX_BET: number;
@@ -42,15 +43,18 @@ interface EnvConfig {
     PRIZE_5P_FIFTH: number;
 }
 
-export const ENV:EnvConfig = {
+export const ENV: EnvConfig = {
   // Server
   PORT: process.env.PORT || 3000,
   NODE_ENV: process.env.NODE_ENV || 'development',
   
+  // CORS
+  CORS_ORIGIN: process.env.CORS_ORIGIN, // 👈 NUEVO
+  
   // Database
   DATABASE_URL: process.env.DATABASE_URL || '',
   
-  // JWT (básico por ahora, lo usaremos en fase 3)
+  // JWT
   JWT_SECRET: process.env.JWT_SECRET || 'gamehub-secret-key-change-in-production',
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '7d',
   

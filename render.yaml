@@ -1,0 +1,127 @@
+# Render Blueprint - GameHub Backend
+# Configuración para deploy automático con BD existente de Koyeb
+
+services:
+  # Web Service - API Backend con Socket.IO
+  - type: web
+    name: gamehub-backend
+    env: node
+    region: oregon
+    plan: free
+    branch: main
+    
+    # Build Command - Compila TypeScript y ejecuta migraciones
+    buildCommand: npm install && npm run build && npx prisma migrate deploy
+    
+    # Start Command - Inicia el servidor desde dist/main.js
+    startCommand: npm start
+    
+    # Health Check - Render verificará que el servidor esté funcionando
+    healthCheckPath: /api/health
+    
+    # Auto Deploy cuando hagas push a main
+    autoDeploy: true
+    
+    # Environment Variables
+    envVars:
+      - key: NODE_ENV
+        value: production
+      
+      - key: PORT
+        value: 10000
+      
+      # Database URL - TU BD EXISTENTE DE KOYEB
+      # ⚠️ DEBES CAMBIAR ESTO MANUALMENTE EN RENDER DASHBOARD DESPUÉS DEL DEPLOY
+      - key: DATABASE_URL
+        value: postgres://
+      
+      # JWT Configuration
+      # Render generará un valor seguro automáticamente
+      - key: JWT_SECRET
+        generateValue: true
+      
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      
+      # Bcrypt Configuration
+      - key: SALT_ROUNDS
+        value: 10
+      
+      # Game Configuration
+      - key: INITIAL_COINS
+        value: 100
+      
+      - key: MIN_BET
+        value: 10
+      
+      - key: MAX_BET
+        value: 1000
+      
+      - key: COUNTDOWN_SECONDS
+        value: 30
+      
+      - key: QUESTIONS_PER_GAME
+        value: 10
+      
+      - key: TIME_PER_QUESTION
+        value: 15
+      
+      # Points Calculation
+      - key: BASE_POINTS
+        value: 10
+      
+      - key: SPEED_BONUS_MULTIPLIER
+        value: 2
+      
+      # Prize Distribution - 2 Players
+      - key: PRIZE_2P_FIRST
+        value: 0.80
+      
+      - key: PRIZE_2P_SECOND
+        value: 0.20
+      
+      # Prize Distribution - 3 Players
+      - key: PRIZE_3P_FIRST
+        value: 0.60
+      
+      - key: PRIZE_3P_SECOND
+        value: 0.30
+      
+      - key: PRIZE_3P_THIRD
+        value: 0.10
+      
+      # Prize Distribution - 4 Players
+      - key: PRIZE_4P_FIRST
+        value: 0.50
+      
+      - key: PRIZE_4P_SECOND
+        value: 0.30
+      
+      - key: PRIZE_4P_THIRD
+        value: 0.20
+      
+      - key: PRIZE_4P_FOURTH
+        value: 0.00
+      
+      # Prize Distribution - 5 Players
+      - key: PRIZE_5P_FIRST
+        value: 0.40
+      
+      - key: PRIZE_5P_SECOND
+        value: 0.30
+      
+      - key: PRIZE_5P_THIRD
+        value: 0.20
+      
+      - key: PRIZE_5P_FOURTH
+        value: 0.10
+      
+      - key: PRIZE_5P_FIFTH
+        value: 0.00
+      
+      # CORS Origin - ACTUALIZAR cuando tengas tu frontend desplegado
+      - key: CORS_ORIGIN
+        value: https://tu-frontend.vercel.app,http://localhost:5173
+
+# ⚠️ NO CREAR BASE DE DATOS EN RENDER
+# Usarás tu BD existente de Koyeb
