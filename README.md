@@ -359,16 +359,6 @@ export const authorizeRole = (...allowedRoles: UserRole[]) => {
 };
 ```
 
-### **Ejemplos de Uso**
-
-#### **Endpoint Protegido (Solo Autenticado)**
-```typescript
-router.get('/profile', 
-  authenticateToken,  // ✅ Cualquier usuario autenticado
-  controller.getProfile
-);
-```
-
 ### **Endpoints por Rol**
 
 #### **Públicos (Sin autenticación)**
@@ -376,8 +366,8 @@ router.get('/profile',
 POST /api/auth/register      # Registro
 POST /api/auth/login         # Login
 GET  /api/health      # Health check
-GET api/auth/users
-GET api/auth/verify
+GET  /api/auth/users
+GET  /api/auth/verify
 ```
 
 #### **USER (Autenticado)**
